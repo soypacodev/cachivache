@@ -1,0 +1,64 @@
+name: Proponer una categoría de limpieza
+description: Falta algo que ocupa disco y el programa no detecta
+labels: ['modulo']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de nada, comprueba con `.\Cachivache.ps1 -Listar` y en `docs/MODULOS.md` que no esté ya
+        cubierto, y prueba con el perfil Exhaustivo, que activa todos los módulos.
+
+  - type: input
+    id: que
+    attributes:
+      label: Qué ocupa espacio
+      placeholder: Caché de compilación de Unreal Engine
+    validations:
+      required: true
+
+  - type: textarea
+    id: rutas
+    attributes:
+      label: Rutas exactas
+      description: Con variables de entorno, no con las rutas de tu equipo.
+      placeholder: |
+        %LOCALAPPDATA%\UnrealEngine\Common\DerivedDataCache
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: tamano
+    attributes:
+      label: Cuánto ocupa en tu equipo
+      placeholder: 34 GB
+
+  - type: textarea
+    id: consecuencia
+    attributes:
+      label: Qué pasa exactamente si se borra
+      description: >
+        Esto es lo más importante de la propuesta. ¿Se regenera solo? ¿Hay que
+        ejecutar algo? ¿Se pierde alguna configuración? ¿Puede haber datos del
+        usuario dentro?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: riesgo
+    attributes:
+      label: Riesgo que le pondrías
+      options:
+        - Bajo — se regenera solo, sin intervención y sin pérdida
+        - Medio — se recupera, pero cuesta algo (volver a descargar o compilar)
+        - Alto — implica una conjetura sobre lo que el usuario quiere
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: comprobado
+    attributes:
+      label: Comprobaciones
+      options:
+        - label: He borrado esa carpeta a mano y el programa siguió funcionando
+        - label: He verificado que ahí dentro no se guardan datos del usuario

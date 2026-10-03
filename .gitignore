@@ -1,0 +1,88 @@
+# ---------------------------------------------------------------------
+#  Salida del programa
+#
+#  Cachivache escribe en %LOCALAPPDATA%\Cachivache; esto cubre informes
+#  exportados al directorio del proyecto o versiones antiguas.
+# ---------------------------------------------------------------------
+*.log
+Informe.html
+informes/
+registros/
+preferencias.json
+historial.json
+analisis_*.html
+analisis_*.csv
+analisis_*.json
+limpieza_*.html
+
+# ---------------------------------------------------------------------
+#  Lanzador compilado
+#
+#  Lo genera tools/Compilar-Lanzador.ps1 y la CI lo adjunta a cada
+#  version. No se versiona: un binario no se puede auditar leyendo el
+#  codigo.
+# ---------------------------------------------------------------------
+Cachivache.exe
+
+# ---------------------------------------------------------------------
+#  Manifiestos de winget y Scoop y sumas SHA-256
+#
+#  Artefactos generados en cada publicacion por
+#  tools/Publicar-Manifiestos.ps1 y tools/Publicar-Sumas.ps1 a partir del
+#  paquete real; versionados quedarian obsoletos. packaging/README.md si se
+#  versiona.
+# ---------------------------------------------------------------------
+packaging/winget/
+packaging/cachivache.json
+SHA256SUMS.txt
+
+# ---------------------------------------------------------------------
+#  Restos de sistemas de archivos de red o FUSE
+#
+#  Copias de archivos abiertos que no se pudieron borrar. No las ven las
+#  pruebas ni el analizador, y publicar.yml copia src/ entero al .zip.
+#  Una invariante tambien las detecta.
+# ---------------------------------------------------------------------
+.fuse_hidden*
+.nfs*
+
+# ---------------------------------------------------------------------
+#  Resultados de las pruebas
+# ---------------------------------------------------------------------
+testResults*.xml
+coverage*.xml
+TestResults/
+
+# ---------------------------------------------------------------------
+#  Editores
+# ---------------------------------------------------------------------
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+*.suo
+*.user
+.idea/
+
+# ---------------------------------------------------------------------
+#  Windows y macOS
+# ---------------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# ---------------------------------------------------------------------
+#  Temporales
+# ---------------------------------------------------------------------
+*.tmp
+*.bak
+*.old
+~$*
+
+# Informes de tools/Probar.ps1.
+pruebas/
+
+# Script local de publicacion, ajeno al proyecto.
+subir.bat

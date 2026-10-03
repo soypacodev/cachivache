@@ -1,0 +1,16 @@
+﻿# Funciones de src/ que ninguna prueba automática nombra.
+#
+# La lista solo puede encoger: tests/Inventario.Tests.ps1 falla si aparece
+# un nombre nuevo.
+#
+# Todas son de src/UI y dependen de WPF: necesitan una ventana real, que el
+# entorno de pruebas no tiene. Se cubren con la prueba manual descrita en
+# docs/PRUEBA-MANUAL.md.
+Get-CarpetaInterfaz
+Get-ColorAcentoTema
+Get-ColorRiesgo
+Get-GeometriaTema
+Import-Xaml
+Initialize-InteropVentana
+Register-LimiteMaximizado
+Show-VentanaPrincipal

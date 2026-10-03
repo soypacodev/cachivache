@@ -1,0 +1,1278 @@
+﻿<!--
+    Ventana principal. Sin x:Class ni manejadores en línea: se carga con
+    XamlReader y todo se conecta desde Window.ps1 buscando por x:Name.
+
+    Tamaño mínimo 880x460: debe caber en un portátil de 1366x768 con
+    escalado al 150 % (910x512 puntos, ya que WPF trabaja en puntos
+    independientes del dispositivo), dejando sitio para la barra de tareas.
+
+    Pendiente: la barra lateral ocupa 228 puntos fijos (una cuarta parte de
+    la ventana con el ancho mínimo) y no se puede plegar.
+-->
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Cachivache" Height="760" Width="1240" MinHeight="460" MinWidth="880"
+        WindowStartupLocation="CenterScreen" WindowStyle="None"
+        Background="{DynamicResource FondoVentana}" AllowsTransparency="False"
+        TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="38" ResizeBorderThickness="6"
+                      GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Border BorderBrush="{DynamicResource Borde}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="38"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!--
+                ============================================================
+                BARRA DE TÍTULO
+                ============================================================
+            -->
+            <Border Grid.Row="0" Background="{DynamicResource FondoBarra}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="14,0,0,0"
+                                VerticalAlignment="Center">
+                        <!--
+                            Logotipo de Cachivache: la misma geometría que assets/cachivache.svg,
+                            en vectorial para que siga el color de acento del tema.
+                        -->
+                        <Viewbox Width="16" Height="16" VerticalAlignment="Center">
+                            <Canvas Width="256" Height="256">
+                                <Path Stroke="{DynamicResource Acento}" StrokeThickness="31"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      Data="M163.55,183.6 A80,80 0 1 1 163.55,72.4"/>
+                                <Rectangle Canvas.Left="192" Canvas.Top="107"
+                                           Width="42" Height="42" RadiusX="11" RadiusY="11"
+                                           Fill="{DynamicResource Acento}"/>
+                            </Canvas>
+                        </Viewbox>
+                        <TextBlock Text="Cachivache" FontWeight="SemiBold" FontSize="13"
+                                   Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtVersionBarra" Text="v2.0.0" FontSize="11"
+                                   Foreground="{DynamicResource TextoTenue}"
+                                   Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <StackPanel x:Name="InsigniaAdmin" Orientation="Horizontal" Visibility="Collapsed">
+                            <Ellipse x:Name="PuntoAdmin" Style="{StaticResource Punto}"
+                                     Fill="{DynamicResource Aviso}"/>
+                            <TextBlock x:Name="TxtInsigniaAdmin" Style="{StaticResource TextoEtiqueta}"
+                                       Foreground="{DynamicResource Aviso}" Text="Modo estándar"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!--
+                        AutomationProperties.Name en los cuatro botones: WindowStyle="None"
+                        elimina los botones nativos y su accesibilidad, y el Content de estos es
+                        un dibujo, no texto. El ToolTip no sirve como nombre accesible.
+                    -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button x:Name="BtnTema" Style="{StaticResource BotonVentana}"
+                                AutomationProperties.Name="Cambiar entre tema oscuro y claro"
+                                ToolTip="Cambiar entre tema oscuro y claro">
+                            <Path x:Name="IconoTema" Width="15" Height="15" Stretch="Uniform"
+                                  Fill="{DynamicResource TextoSuave}"
+                                  Data="M12,3 A9,9 0 1,0 21,12 A7,7 0 0,1 12,3 Z"/>
+                        </Button>
+                        <Button x:Name="BtnMinimizar" Style="{StaticResource BotonVentana}"
+                                AutomationProperties.Name="Minimizar la ventana">
+                            <Path Width="10" Height="1" Stretch="Fill" Fill="{DynamicResource TextoSuave}"
+                                  Data="M0,0 L10,0 L10,1 L0,1 Z"/>
+                        </Button>
+                        <Button x:Name="BtnMaximizar" Style="{StaticResource BotonVentana}"
+                                AutomationProperties.Name="Maximizar o restaurar la ventana">
+                            <Border Width="10" Height="10" BorderThickness="1.3"
+                                    BorderBrush="{DynamicResource TextoSuave}"/>
+                        </Button>
+                        <Button x:Name="BtnCerrar" Style="{StaticResource BotonCerrar}"
+                                AutomationProperties.Name="Cerrar Cachivache">
+                            <Path Width="10" Height="10" Stretch="Uniform" StrokeThickness="1.4"
+                                  Stroke="{DynamicResource TextoSuave}" Data="M0,0 L10,10 M10,0 L0,10"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--
+                ============================================================
+                CUERPO
+                ============================================================
+            -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="228"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- PANEL LATERAL -->
+                <Border Grid.Column="0" Background="{DynamicResource FondoLateral}"
+                        BorderBrush="{DynamicResource Borde}" BorderThickness="0,0,1,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!--
+                            DirectionalNavigation="None": en un grupo de botones de radio las
+                            flechas mueven el foco y además marcan, lo que aquí cambiaría de panel.
+                            Así Tab recorre las entradas y Espacio activa la enfocada; el foco es
+                            visible gracias a AnilloFoco.
+                        -->
+                        <StackPanel Grid.Row="0" Margin="0,16,0,0"
+                                    KeyboardNavigation.DirectionalNavigation="None"
+                                    KeyboardNavigation.TabNavigation="Continue">
+                            <TextBlock Text="NAVEGACIÓN" Style="{StaticResource Seccion}" Margin="24,0,0,8"/>
+                            <RadioButton x:Name="NavInicio"     Style="{StaticResource BotonNavegacion}"
+                                         GroupName="nav" IsTabStop="True" IsChecked="True" Content="Inicio"/>
+                            <RadioButton x:Name="NavResultados" Style="{StaticResource BotonNavegacion}"
+                                         GroupName="nav" IsTabStop="True" Content="Resultados"/>
+                            <RadioButton x:Name="NavRegistro"   Style="{StaticResource BotonNavegacion}"
+                                         GroupName="nav" IsTabStop="True" Content="Registro"/>
+                            <RadioButton x:Name="NavInformes"   Style="{StaticResource BotonNavegacion}"
+                                         GroupName="nav" IsTabStop="True" Content="Informes"/>
+                            <RadioButton x:Name="NavAjustes"    Style="{StaticResource BotonNavegacion}"
+                                         GroupName="nav" IsTabStop="True" Content="Ajustes"/>
+                            <RadioButton x:Name="NavAcerca"     Style="{StaticResource BotonNavegacion}"
+                                         GroupName="nav" IsTabStop="True" Content="Acerca de"/>
+                        </StackPanel>
+
+                        <!-- Estado de los discos -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,20,0,0">
+                            <StackPanel Margin="18,0">
+                                <TextBlock Text="DISCOS" Style="{StaticResource Seccion}" Margin="8,0,0,12"/>
+                                <ItemsControl x:Name="ListaDiscos">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource Tarjeta}" Padding="16" Margin="0,0,0,8">
+                                                <StackPanel>
+                                                    <!--
+                                                        Dos columnas: el nombre ocupa el espacio sobrante y se recorta con
+                                                        puntos suspensivos; el porcentaje siempre cabe.
+                                                    -->
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <!--
+                                                            El nombre accesible usa el mismo enlace que el texto visible, para que
+                                                            cada casilla anuncie su disco.
+                                                        -->
+                                                        <CheckBox Grid.Column="0" IsChecked="{Binding Seleccionado, Mode=TwoWay}"
+                                                                  AutomationProperties.Name="{Binding Titulo}"
+                                                                  VerticalAlignment="Center" Margin="0,0,8,0"
+                                                                  ToolTip="Incluir esta unidad en el análisis"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Titulo}"
+                                                                   FontWeight="SemiBold" FontSize="13"
+                                                                   VerticalAlignment="Center"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   ToolTip="{Binding Titulo}" Margin="0,0,8,0"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Porcentaje}" FontSize="12"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource TextoTenue}"/>
+                                                    </Grid>
+                                                    <!--
+                                                        Ancho fijo: Window.ps1 calcula el ancho de la parte usada sobre estos
+                                                        160 px.
+                                                    -->
+                                                    <Border Height="6" CornerRadius="3" Margin="0,9,0,7" Width="160"
+                                                            HorizontalAlignment="Left"
+                                                            Background="{DynamicResource DiscoLibre}">
+                                                        <Border CornerRadius="3" HorizontalAlignment="Left"
+                                                                Width="{Binding AnchoUsado}"
+                                                                Background="{Binding ColorBarra}"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Detalle}" FontSize="11"
+                                                               Foreground="{DynamicResource TextoTenue}"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <StackPanel Grid.Row="2" Margin="24,10,24,18">
+                            <Border Style="{StaticResource Separador}" Margin="0,0,0,12"/>
+                            <TextBlock x:Name="TxtTotalHistorico" FontSize="12"
+                                       Foreground="{DynamicResource TextoTenue}" TextWrapping="Wrap"
+                                       Text="Sin limpiezas registradas todavía."/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- ZONA DE CONTENIDO -->
+                <Grid Grid.Column="1">
+
+                    <!-- ==================== INICIO ==================== -->
+                    <!--
+                        Focusable + IsTabStop="False": el panel es destino de
+                        foco pero no parada de tabulación. mostrarPanel le da el
+                        foco para que los lectores de pantalla anuncien su nombre
+                        (su título visible). Sin IsTabStop="False" habría una
+                        parada de tabulación más por panel.
+                    -->
+                    <Grid x:Name="PanelInicio"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Análisis del equipo">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="32,28,32,0">
+                            <TextBlock Text="Análisis del equipo" Style="{StaticResource Titulo}"/>
+                            <TextBlock Style="{StaticResource Subtitulo}" Margin="0,4,0,0"
+                                       Text="Elige un perfil y los módulos que quieres revisar. El análisis no borra nada: solo mira y te enseña lo que ha encontrado."/>
+                        </StackPanel>
+
+                        <ScrollViewer Grid.Row="1" Margin="32,24,24,0" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,0,6,20">
+
+                                <!-- Perfiles -->
+                                <TextBlock Text="PERFIL DE LIMPIEZA" Style="{StaticResource Seccion}"/>
+                                <ItemsControl x:Name="ListaPerfiles">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="4"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <!--
+                                                La plantilla no tiene ContentPresenter, así que
+                                                Content está vacío: el nombre accesible se enlaza
+                                                a la misma propiedad que pinta el título.
+                                            -->
+                                            <RadioButton GroupName="perfil" Cursor="Hand" Margin="0,0,12,0"
+                                                         AutomationProperties.Name="{Binding Nombre}"
+                                                         IsChecked="{Binding Activo, Mode=TwoWay}">
+                                                <RadioButton.Template>
+                                                    <ControlTemplate TargetType="RadioButton">
+                                                        <Border x:Name="marco" CornerRadius="11" Padding="16"
+                                                                Background="{DynamicResource FondoTarjeta}"
+                                                                BorderBrush="{DynamicResource Borde}" BorderThickness="1.5">
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding Nombre}" FontWeight="SemiBold" FontSize="15"/>
+                                                                <TextBlock Text="{Binding Resumen}" FontSize="12" Margin="0,4,0,0"
+                                                                           TextWrapping="Wrap" Height="46"
+                                                                           Foreground="{DynamicResource TextoTenue}"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="marco" Property="Background" Value="{DynamicResource FondoElevado}"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsChecked" Value="True">
+                                                                <Setter TargetName="marco" Property="BorderBrush" Value="{DynamicResource Acento}"/>
+                                                                <Setter TargetName="marco" Property="Background"  Value="{DynamicResource AcentoTenue}"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </RadioButton.Template>
+                                            </RadioButton>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Módulos -->
+                                <Grid Margin="0,30,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="MÓDULOS A ANALIZAR"
+                                               TextTrimming="CharacterEllipsis" Style="{StaticResource Seccion}"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                HorizontalAlignment="Right" Margin="0,-6,0,0">
+                                        <Button x:Name="BtnModulosTodos"  Style="{StaticResource BotonTexto}" Content="Marcar todos"/>
+                                        <Button x:Name="BtnModulosNinguno" Style="{StaticResource BotonTexto}" Content="Desmarcar todos"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <ItemsControl x:Name="ListaModulos">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="2"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,12,12" Padding="16">
+                                                <Border.Style>
+                                                    <Style TargetType="Border" BasedOn="{StaticResource Tarjeta}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Disponible}" Value="False">
+                                                                <Setter Property="Opacity" Value="0.45"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!--
+                                                        La casilla y el nombre están en celdas distintas:
+                                                        sin nombre accesible propio, todas las casillas
+                                                        serían idénticas para un lector de pantalla.
+                                                    -->
+                                                    <CheckBox Grid.Column="0" VerticalAlignment="Top" Margin="0,4,0,0"
+                                                              AutomationProperties.Name="{Binding Nombre}"
+                                                              IsChecked="{Binding Seleccionado, Mode=TwoWay}"
+                                                              IsEnabled="{Binding Disponible}"/>
+
+                                                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Nombre}" FontWeight="SemiBold" FontSize="13"
+                                                                       TextWrapping="Wrap" MaxWidth="280"/>
+                                                            <StackPanel Orientation="Horizontal" Margin="10,2,0,0"
+                                                                        VerticalAlignment="Top">
+                                                                <Ellipse Style="{StaticResource Punto}" Fill="{Binding ColorRiesgo}"/>
+                                                                <TextBlock Style="{StaticResource TextoEtiqueta}"
+                                                                           Text="{Binding Riesgo}" Foreground="{Binding ColorRiesgo}"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Descripcion}" FontSize="12" Margin="0,4,0,0"
+                                                                   TextWrapping="Wrap"
+                                                                   Foreground="{DynamicResource TextoTenue}"/>
+                                                        <TextBlock Text="{Binding Nota}" FontSize="12" Margin="0,4,0,0"
+                                                                   TextWrapping="Wrap" Visibility="{Binding VisibilidadNota}"
+                                                                   Foreground="{DynamicResource Aviso}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Pie de acción -->
+                        <Border Grid.Row="2" Background="{DynamicResource FondoBarra}"
+                                BorderBrush="{DynamicResource Borde}" BorderThickness="0,1,0,0" Padding="32,16">
+                            <!-- Dos columnas (ver la barra inferior de
+                                 Panel.Resultados.xaml): sin ellas, el texto y los
+                                 botones se superponen al estrechar. -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock x:Name="TxtEstadoInicio" FontSize="13"
+                                               TextTrimming="CharacterEllipsis" Text="Listo para analizar."/>
+                                    <ProgressBar x:Name="BarraInicio" Width="420" Margin="0,12,0,0"
+                                                 HorizontalAlignment="Left" Visibility="Collapsed"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                                            VerticalAlignment="Center">
+                                    <Button x:Name="BtnCancelar" Style="{StaticResource BotonSecundario}"
+                                            Content="Cancelar" Margin="0,0,10,0" Visibility="Collapsed"/>
+                                    <Button x:Name="BtnAnalizar" Style="{StaticResource BotonPrimario}"
+                                            Content="Analizar el equipo" Padding="24,12"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- ==================== RESULTADOS ==================== -->
+                    <!-- Destino de foco, no parada de tabulación. -->
+                    <Grid x:Name="PanelResultados" Visibility="Collapsed"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Resultados del análisis">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="32,28,32,0">
+                            <TextBlock Text="Resultados del análisis" Style="{StaticResource Titulo}"/>
+                            <TextBlock x:Name="TxtResumenAnalisis" Style="{StaticResource Subtitulo}" Margin="0,4,0,0"
+                                       Text="Todavía no se ha analizado nada."/>
+
+                            <!--
+                                Franja de análisis incompleto, junto a la lista
+                                porque es donde se decide qué borrar. Oculta salvo
+                                cuando realmente falta algo.
+                            -->
+                            <Border x:Name="AvisoIncompleto" Visibility="Collapsed"
+                                    Margin="0,14,0,0" Padding="14,10" CornerRadius="8"
+                                    Background="{DynamicResource FondoBarra}"
+                                    BorderBrush="{DynamicResource Aviso}" BorderThickness="1">
+                                <TextBlock x:Name="TxtAvisoIncompleto" TextWrapping="Wrap" FontSize="13"
+                                           Foreground="{DynamicResource Aviso}"
+                                           Text=""/>
+                            </Border>
+
+                            <!--
+                                Resultado de la simulación, visible en este panel.
+                                Usa el color de acento y no el de éxito porque no se
+                                ha borrado nada. Se oculta al cambiar la selección,
+                                ya que sus cifras dejan de corresponder.
+                            -->
+                            <Border x:Name="AvisoSimulacion" Visibility="Collapsed"
+                                    Margin="0,14,0,0" Padding="14,10" CornerRadius="8"
+                                    Background="{DynamicResource FondoBarra}"
+                                    BorderBrush="{DynamicResource Acento}" BorderThickness="1">
+                                <TextBlock x:Name="TxtAvisoSimulacion" TextWrapping="Wrap" FontSize="13"
+                                           Foreground="{DynamicResource Acento}"
+                                           Text=""/>
+                            </Border>
+                        </StackPanel>
+
+                        <!--
+                            Barra de herramientas.
+
+                            Las dos columnas son necesarias: en una sola celda, los
+                            dos grupos se superponen cuando no caben. La columna
+                            derecha (Auto) reserva primero el ancho de sus botones y
+                            la izquierda se queda con el resto. El grupo izquierdo es
+                            un WrapPanel para que lo que no cabe baje a otra línea;
+                            la fila es de alto Auto y crece con él.
+                        -->
+                        <Grid Grid.Row="1" Margin="32,20,32,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Grid Width="270" Margin="0,0,0,6">
+                                    <!--
+                                        El marcador de posición no es una etiqueta (WPF no
+                                        lo asocia al campo): hace falta nombre accesible.
+                                    -->
+                                    <TextBox x:Name="CampoFiltro"
+                                             AutomationProperties.Name="Filtrar por nombre o ruta"/>
+                                    <!-- Marcador de posición: se oculta solo en cuanto hay texto. -->
+                                    <TextBlock Text="Filtrar por nombre o ruta..." IsHitTestVisible="False"
+                                               Margin="12,0,0,0" VerticalAlignment="Center" FontSize="13"
+                                               Foreground="{DynamicResource TextoTenue}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=CampoFiltro}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                                <ComboBox x:Name="FiltroRiesgo" Width="150" Margin="10,0,0,6"
+                                          VerticalAlignment="Center"
+                                          AutomationProperties.Name="Filtrar por nivel de riesgo">
+                                    <ComboBoxItem Content="Todos los riesgos" IsSelected="True"/>
+                                    <ComboBoxItem Content="Solo riesgo bajo"/>
+                                    <ComboBoxItem Content="Solo riesgo medio"/>
+                                    <ComboBoxItem Content="Solo riesgo alto"/>
+                                </ComboBox>
+                                <!--
+                                    OCULTAR LO YA ELIMINADO. Es una casilla, desmarcada
+                                    por defecto, y no algo automático: el resultado de la
+                                    limpieza debe verse al terminar. Solo oculta lo que se
+                                    borró bien; los fallos siguen visibles. La decisión
+                                    está en el predicado del filtro (PowerShell), no en
+                                    un disparador del XAML.
+                                -->
+                                <CheckBox x:Name="ChkOcultarHechos" Margin="12,0,0,6"
+                                          VerticalAlignment="Center"
+                                          Content="Ocultar lo ya eliminado"
+                                          ToolTip="Esconde las filas que se borraron bien. Lo que falló sigue viéndose siempre, en rojo, para que puedas reintentarlo."/>
+                            </WrapPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                        HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button x:Name="BtnMarcarTodo"   Style="{StaticResource BotonTexto}" Content="Marcar todo"/>
+                                <Button x:Name="BtnDesmarcarTodo" Style="{StaticResource BotonTexto}" Content="Desmarcar todo"/>
+                                <Button x:Name="BtnSoloSeguros"  Style="{StaticResource BotonTexto}" Content="Solo lo seguro"/>
+                                <Border Width="1" Margin="8,4" Background="{DynamicResource Borde}"/>
+                                <Button x:Name="BtnVerContenido" Style="{StaticResource BotonTexto}" Content="Ver contenido"
+                                        ToolTip="Cuántos archivos hay, de cuándo es lo más reciente y qué es lo que ocupa"/>
+                                <Button x:Name="BtnAbrirCarpeta" Style="{StaticResource BotonTexto}" Content="Abrir ubicación"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Lista -->
+                        <!--
+                            IsReadOnly: el doble clic abre la ubicación en vez de
+                            entrar en modo edición. Las casillas siguen funcionando
+                            porque están en la CellTemplate.
+                        -->
+                        <DataGrid x:Name="TablaResultados" Grid.Row="2" Margin="20,0,20,0"
+                                  IsReadOnly="True">
+                            <!--
+                                MENÚ CONTEXTUAL DE LA FILA.
+
+                                Cuelga de la tabla y no del estilo de fila: dentro de
+                                un Style los MenuItem no tienen ámbito de nombres y
+                                FindName no los encuentra. Así son controles con
+                                nombre, resueltos en $c. Como consecuencia, el menú
+                                también se abre sobre la cabecera y el hueco vacío;
+                                los manejadores comprueban que haya fila.
+
+                                El color se fija en el menú y en cada entrada porque
+                                la plantilla nativa puede no heredarlo.
+                            -->
+                            <DataGrid.ContextMenu>
+                                <ContextMenu Background="{DynamicResource FondoElevado}"
+                                             Foreground="{DynamicResource Texto}"
+                                             BorderBrush="{DynamicResource Borde}">
+                                    <MenuItem x:Name="MenuAbrirUbicacion" Header="Abrir ubicación"
+                                              Foreground="{DynamicResource Texto}"/>
+                                    <MenuItem x:Name="MenuCopiarRuta" Header="Copiar ruta"
+                                              Foreground="{DynamicResource Texto}"/>
+                                    <Separator/>
+                                    <MenuItem x:Name="MenuExcluirSiempre" Header="Excluir siempre esto"
+                                              Foreground="{DynamicResource Texto}"/>
+                                    <MenuItem x:Name="MenuDesmarcarGrupo" Header="Desmarcar el grupo"
+                                              Foreground="{DynamicResource Texto}"/>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.ContainerStyle>
+                                        <Style TargetType="GroupItem">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="GroupItem">
+                                                        <!-- Grid y no StackPanel: un StackPanel da altura infinita
+                                                             a sus hijos y anula la virtualización de la lista. -->
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="*"/>
+                                                            </Grid.RowDefinitions>
+                                                            <Border Grid.Row="0" Background="{DynamicResource FondoElevado}"
+                                                                    CornerRadius="8" Padding="16,10" Margin="0,16,0,4">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+
+                                                                    <!-- Plegar o desplegar el grupo. -->
+                                                                    <ToggleButton x:Name="BtnPlegarGrupo" Grid.Column="0"
+                                                                                  IsChecked="True" Margin="0,0,10,0"
+                                                                                  Background="Transparent" BorderThickness="0"
+                                                                                  Cursor="Hand" Focusable="True"
+                                                                                  AutomationProperties.Name="Plegar o desplegar esta categoría"
+                                                                                  ToolTip="Plegar o desplegar esta categoría">
+                                                                        <ToggleButton.Template>
+                                                                            <ControlTemplate TargetType="ToggleButton">
+                                                                                <Border Background="Transparent" Padding="2">
+                                                                                    <!--
+                                                                                        El giro se cambia reemplazando la
+                                                                                        transformación entera del Path. No se
+                                                                                        puede usar TargetName sobre una
+                                                                                        RotateTransform: es un Freezable, no
+                                                                                        entra en el ámbito de nombres de la
+                                                                                        plantilla y WPF lanza al aplicar el
+                                                                                        disparador (no al cargar el XAML).
+                                                                                    -->
+                                                                                    <Path x:Name="Punta" Width="10" Height="10"
+                                                                                          Stretch="Uniform"
+                                                                                          Fill="{DynamicResource TextoTenue}"
+                                                                                          Data="M4,2 L10,8 L4,14 Z"
+                                                                                          RenderTransformOrigin="0.5,0.5">
+                                                                                        <Path.RenderTransform>
+                                                                                            <RotateTransform Angle="0"/>
+                                                                                        </Path.RenderTransform>
+                                                                                    </Path>
+                                                                                </Border>
+                                                                                <ControlTemplate.Triggers>
+                                                                                    <Trigger Property="IsChecked" Value="True">
+                                                                                        <Setter TargetName="Punta" Property="RenderTransform">
+                                                                                            <Setter.Value>
+                                                                                                <RotateTransform Angle="90"/>
+                                                                                            </Setter.Value>
+                                                                                        </Setter>
+                                                                                    </Trigger>
+                                                                                </ControlTemplate.Triggers>
+                                                                            </ControlTemplate>
+                                                                        </ToggleButton.Template>
+                                                                    </ToggleButton>
+
+                                                                    <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                                                               FontWeight="SemiBold" FontSize="13"
+                                                                               VerticalAlignment="Center"/>
+
+                                                                    <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                                                                VerticalAlignment="Center">
+                                                                        <!--
+                                                                            Dos botones y no una casilla de tres estados: el estado "a medias"
+                                                                            habría que recalcularlo con cada cambio de fila, y las cabeceras las
+                                                                            crea y destruye el panel virtualizado. Una casilla desactualizada
+                                                                            indicaría un estado falso; los botones solo ejecutan una acción.
+                                                                        -->
+                                                                        <!-- Se distinguen por x:Name, no por el texto del botón. -->
+                                                                        <Button x:Name="BtnMarcarGrupo"
+                                                                                Style="{StaticResource BotonTexto}"
+                                                                                Content="Marcar" Tag="{Binding Name}"
+                                                                                ToolTip="Marcar todo lo que se pueda borrar de esta categoría"/>
+                                                                        <Button x:Name="BtnQuitarGrupo"
+                                                                                Style="{StaticResource BotonTexto}"
+                                                                                Content="Quitar" Tag="{Binding Name}"
+                                                                                ToolTip="Desmarcar toda esta categoría"/>
+                                                                        <TextBlock FontSize="12" Margin="10,0,0,0"
+                                                                                   VerticalAlignment="Center"
+                                                                                   Foreground="{DynamicResource TextoTenue}">
+                                                                            <!--
+                                                                                "Elementos: 12" en forma de etiqueta, para no depender de singular y
+                                                                                plural. Un DataTrigger que cambiaba la palabra según ItemCount no
+                                                                                aplicaba bien el valor por defecto en Windows; un enlace y una palabra
+                                                                                fija no necesitan disparadores.
+                                                                            -->
+                                                                            <Run Text="Elementos:"/>
+                                                                            <Run Text="{Binding ItemCount, Mode=OneWay}"/>
+                                                                        </TextBlock>
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </Border>
+                                                            <!--
+                                                                La visibilidad depende del ToggleButton. No se usa un Expander para no
+                                                                añadir otro contenedor entre el Grid y el ItemsPresenter, del que
+                                                                depende la virtualización (ver el comentario del Grid).
+                                                            -->
+                                                            <ItemsPresenter Grid.Row="1"
+                                                                            Visibility="{Binding IsChecked, ElementName=BtnPlegarGrupo,
+                                                                                        Converter={StaticResource BoolAVisible}}"/>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </GroupStyle.ContainerStyle>
+                                </GroupStyle>
+                            </DataGrid.GroupStyle>
+
+                            <DataGrid.Columns>
+                                <!--
+                                    SortMemberPath en todas las columnas: WPF no sabe por qué campo ordenar
+                                    una DataGridTemplateColumn, y sin él la cabecera no ordena.
+                                -->
+                                <DataGridTemplateColumn Width="46" SortMemberPath="Seleccionado">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <!--
+                                                Nombre accesible de la casilla: el del elemento (mismo enlace que la
+                                                columna contigua), para que un lector de pantalla diga qué se marca.
+                                            -->
+                                            <CheckBox IsChecked="{Binding Seleccionado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      AutomationProperties.Name="{Binding Nombre}"
+                                                      IsEnabled="{Binding Borrable}"
+                                                      HorizontalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="ELEMENTO" Width="*" SortMemberPath="Nombre">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Nombre}" FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Info}" FontSize="12" Margin="0,4,0,0"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Foreground="{DynamicResource TextoTenue}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Por Bytes y no por Tamano: el texto formateado no ordena bien ("9,52 GB" antes que "980 MB"). -->
+                                <DataGridTemplateColumn Header="TAMAÑO" Width="110" SortMemberPath="Bytes">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Tamano}" HorizontalAlignment="Right"
+                                                       FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Por OrdenRiesgo: la cadena ordenaría Alto, Bajo, Medio. -->
+                                <DataGridTemplateColumn Header="RIESGO" Width="100" SortMemberPath="OrdenRiesgo">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Ellipse Style="{StaticResource Punto}" Fill="{Binding ColorRiesgo}"/>
+                                                <TextBlock Style="{StaticResource TextoEtiqueta}"
+                                                           Text="{Binding Riesgo}" Foreground="{Binding ColorRiesgo}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="QUÉ PASA SI SE BORRA" Width="2*" SortMemberPath="Efecto">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <!--
+                                                La ayuda emergente lleva el texto completo, por si la celda se recorta.
+                                            -->
+                                            <StackPanel VerticalAlignment="Center"
+                                                        ToolTipService.ShowDuration="30000">
+                                                <StackPanel.ToolTip>
+                                                    <TextBlock Text="{Binding TextoCompleto}"
+                                                               TextWrapping="Wrap" MaxWidth="520"/>
+                                                </StackPanel.ToolTip>
+                                                <TextBlock Text="{Binding Aviso}" FontSize="12" FontWeight="SemiBold"
+                                                           Visibility="{Binding VisibilidadAviso}" TextWrapping="Wrap"
+                                                           Foreground="{DynamicResource Peligro}"/>
+                                                <TextBlock Text="{Binding Efecto}" FontSize="12" TextWrapping="Wrap"
+                                                           Foreground="{DynamicResource TextoSuave}"/>
+                                                <!--
+                                                    Comando externo real que se ejecutará. SECURITY.md exige que sea
+                                                    siempre visible en la interfaz. Solo aparece con el método 'Comando';
+                                                    en monoespaciado.
+                                                -->
+                                                <TextBlock Text="{Binding Comando}" FontSize="11" FontFamily="Consolas"
+                                                           Visibility="{Binding VisibilidadComando}" TextWrapping="Wrap"
+                                                           Margin="0,4,0,0" Foreground="{DynamicResource Texto}"/>
+                                                <!--
+                                                    Resultado real de la eliminación, fila a fila. La visibilidad depende de
+                                                    que haya algo que mostrar y el color de si es un fallo; ambas decisiones
+                                                    están en ItemVista (comprobables por pruebas), no en disparadores XAML.
+                                                -->
+                                                <TextBlock Text="{Binding Estado}" FontSize="12" FontWeight="SemiBold"
+                                                           TextWrapping="Wrap" Margin="0,4,0,0"
+                                                           Visibility="{Binding VisibilidadEstado}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource Exito}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding EstadoEsFallo}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource Peligro}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="BorderBrush"     Value="{DynamicResource BordeSuave}"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="ToolTip"         Value="{Binding Ruta}"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource FondoTarjeta}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource AcentoTenue}"/>
+                                        </Trigger>
+                                        <DataTrigger Binding="{Binding Hecho}" Value="True">
+                                            <Setter Property="Opacity" Value="0.45"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                        </DataGrid>
+
+                        <!--
+                            Cartel de tabla vacía. Ocupa la misma celda que la tabla y solo es
+                            visible cuando la vista está vacía.
+
+                            El texto, la visibilidad y el rótulo del botón los asigna PowerShell con
+                            el resultado de Get-EstadoVacio; aquí no hay disparadores ni
+                            convertidores, porque su comportamiento no se puede verificar sin WPF.
+                            El Content literal del botón solo se ve si falla esa asignación.
+                        -->
+                        <Border x:Name="EstadoVacio" Grid.Row="2" Visibility="Collapsed"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                MaxWidth="520" Margin="20,24" Padding="24,20" CornerRadius="8"
+                                Background="{DynamicResource FondoElevado}"
+                                BorderBrush="{DynamicResource Borde}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock x:Name="TxtEstadoVacio" TextWrapping="Wrap" FontSize="13"
+                                           TextAlignment="Center"
+                                           Foreground="{DynamicResource TextoSuave}"
+                                           Text="Todavía no se ha analizado nada."/>
+                                <Button x:Name="BtnQuitarFiltros" Style="{StaticResource BotonSecundario}"
+                                        Visibility="Collapsed" Margin="0,16,0,0"
+                                        HorizontalAlignment="Center"
+                                        Content="Quitar los filtros"
+                                        ToolTip="Vacía el cuadro de filtro y vuelve a poner el desplegable en Todos los riesgos"/>
+                                <!--
+                                    Botón propio para el filtro "Ocultar lo ya eliminado": cada botón deshace
+                                    una cosa distinta. Nunca se muestran los dos a la vez (lo comprueba una
+                                    prueba que recorre todas las combinaciones).
+                                -->
+                                <Button x:Name="BtnMostrarHechos" Style="{StaticResource BotonSecundario}"
+                                        Visibility="Collapsed" Margin="0,16,0,0"
+                                        HorizontalAlignment="Center"
+                                        Content="Mostrar lo ya eliminado"
+                                        ToolTip="Vuelve a enseñar las filas que se borraron bien"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Pie con el resumen y el botón de eliminar -->
+                        <Border Grid.Row="3" Background="{DynamicResource FondoBarra}"
+                                BorderBrush="{DynamicResource Borde}" BorderThickness="0,1,0,0" Padding="32,16">
+                            <!--
+                                Dos columnas, como la barra de herramientas: en una sola celda el texto
+                                y los botones se superponen al estrechar la ventana. El TextTrimming
+                                evita que el texto se corte a media palabra.
+                            -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock x:Name="TxtSeleccion" FontSize="13" FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis"
+                                               Text="Nada marcado."/>
+                                    <TextBlock x:Name="TxtProyeccion" FontSize="12" Margin="0,4,0,0"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource TextoTenue}" Text=""/>
+                                    <ProgressBar x:Name="BarraBorrado" Width="420" Margin="0,12,0,0"
+                                                 HorizontalAlignment="Left" Visibility="Collapsed"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                                            VerticalAlignment="Center">
+                                    <!--
+                                        La casilla de simulación está junto al botón de eliminar, no en Ajustes:
+                                        cambia lo que hace ese botón y debe verse desde él.
+                                    -->
+                                    <CheckBox x:Name="ChkSimular" VerticalAlignment="Center"
+                                              Margin="0,0,18,0"
+                                              Content="Solo simular"
+                                              ToolTip="Recorre y mide todo lo marcado, te dice cuánto liberaría y no borra nada."/>
+                                    <!--
+                                        Solo aparece tras una limpieza que haya enviado algo a la papelera, para
+                                        indicar que lo borrado se puede recuperar.
+                                    -->
+                                    <Button x:Name="BtnAbrirPapelera" Style="{StaticResource BotonSecundario}"
+                                            Content="Abrir la papelera" Margin="0,0,10,0" Visibility="Collapsed"/>
+                                    <Button x:Name="BtnCancelarBorrado" Style="{StaticResource BotonSecundario}"
+                                            Content="Detener" Margin="0,0,10,0" Visibility="Collapsed"/>
+                                    <!--
+                                        Junto al botón que guarda el informe, porque cambia lo que produce.
+                                        Equivale a -InformeAnonimo de la consola; sin ella el informe incluye el
+                                        nombre de usuario de Windows en cada ruta.
+                                    -->
+                                    <CheckBox x:Name="ChkAnonimizar" VerticalAlignment="Center"
+                                              Margin="0,0,18,0"
+                                              Content="Anonimizar rutas"
+                                              ToolTip="En el informe que guardes, tu nombre de usuario, tu carpeta de perfil y el nombre del equipo se sustituyen por marcadores. Márcala si vas a adjuntarlo a una incidencia."/>
+                                    <Button x:Name="BtnExportar" Style="{StaticResource BotonSecundario}"
+                                            Content="Guardar informe" Margin="0,0,10,0"/>
+                                    <Button x:Name="BtnEliminar" Style="{StaticResource BotonPeligro}"
+                                            Content="Eliminar lo marcado" Padding="24,12" IsEnabled="False"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- ==================== REGISTRO ==================== -->
+                    <!-- Destino de foco, no parada de tabulación. -->
+                    <Grid x:Name="PanelRegistro" Visibility="Collapsed"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Registro de la sesión">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <!-- Dos columnas (ver la barra inferior de
+                             Panel.Resultados.xaml): el párrafo largo no debe
+                             invadir los botones. -->
+                        <Grid Grid.Row="0" Margin="32,28,32,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <TextBlock Text="Registro de la sesión" Style="{StaticResource Titulo}"/>
+                                <TextBlock Style="{StaticResource Subtitulo}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                           Text="Cada línea que el programa escribe en su archivo de registro aparece aquí, palabra por palabra. En pantalla se conservan las 2.000 últimas; en el archivo están todas."/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                        HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                <Button x:Name="BtnCopiarRegistro" Style="{StaticResource BotonSecundario}" Content="Copiar"/>
+                                <Button x:Name="BtnAbrirRegistro"  Style="{StaticResource BotonSecundario}"
+                                        Content="Abrir carpeta" Margin="10,0,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                        <!-- Sin aviso de "vacío": el arranque ya escribe la cabecera
+                             de sesión, así que el panel nunca está en blanco. -->
+                        <TextBox x:Name="Consola" Grid.Row="1" Style="{StaticResource Consola}" Margin="32,20,32,28"
+                                 AutomationProperties.Name="Registro de la sesión"/>
+                    </Grid>
+
+                    <!-- ==================== INFORMES ==================== -->
+                    <!-- Destino de foco, no parada de tabulación. -->
+                    <Grid x:Name="PanelInformes" Visibility="Collapsed"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Informes e historial">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="32,28,32,0">
+                            <TextBlock Text="Informes e historial" Style="{StaticResource Titulo}"/>
+                            <TextBlock Style="{StaticResource Subtitulo}" Margin="0,4,0,0"
+                                       Text="Cada análisis y cada limpieza quedan registrados. Los informes son archivos independientes que puedes archivar o compartir."/>
+                        </StackPanel>
+
+                        <ScrollViewer Grid.Row="1" Margin="32,24,24,0" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,0,8,24">
+                                <Border Style="{StaticResource Tarjeta}">
+                                    <StackPanel>
+                                        <TextBlock Text="Exportar el análisis actual" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,6,0,14"
+                                                   Text="Genera un archivo con todo lo encontrado en el último análisis."/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="BtnExportarHtml" Style="{StaticResource BotonPrimario}"   Content="Informe HTML"/>
+                                            <Button x:Name="BtnExportarCsv"  Style="{StaticResource BotonSecundario}" Content="Hoja de cálculo (CSV)" Margin="10,0,0,0"/>
+                                            <Button x:Name="BtnExportarJson" Style="{StaticResource BotonSecundario}" Content="Datos (JSON)" Margin="10,0,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="INFORMES GUARDADOS" Style="{StaticResource Seccion}" Margin="0,28,0,8"/>
+                                <TextBlock Style="{StaticResource Subtitulo}" Margin="0,0,0,12"
+                                           Text="Todo lo que se ha exportado hasta ahora, del más reciente al más antiguo. Pulsa uno para abrirlo."/>
+
+                                <TextBlock Text="Informes HTML" FontWeight="SemiBold" FontSize="13" Margin="0,6,0,8"/>
+                                <ListBox x:Name="ListaInformesHtml" Style="{StaticResource ListaTarjetas}"
+                                         ItemTemplate="{StaticResource PlantillaInforme}"/>
+                                <TextBlock x:Name="TxtSinInformesHtml" Style="{StaticResource Subtitulo}"
+                                           Margin="0,0,0,4" Text="Todavía no hay ningún informe HTML."/>
+
+                                <TextBlock Text="Hojas de cálculo (CSV)" FontWeight="SemiBold" FontSize="13" Margin="0,20,0,8"/>
+                                <ListBox x:Name="ListaInformesCsv" Style="{StaticResource ListaTarjetas}"
+                                         ItemTemplate="{StaticResource PlantillaInforme}"/>
+                                <TextBlock x:Name="TxtSinInformesCsv" Style="{StaticResource Subtitulo}"
+                                           Margin="0,0,0,4" Text="Todavía no hay ninguna hoja de cálculo."/>
+
+                                <TextBlock Text="Datos (JSON)" FontWeight="SemiBold" FontSize="13" Margin="0,20,0,8"/>
+                                <ListBox x:Name="ListaInformesJson" Style="{StaticResource ListaTarjetas}"
+                                         ItemTemplate="{StaticResource PlantillaInforme}"/>
+                                <TextBlock x:Name="TxtSinInformesJson" Style="{StaticResource Subtitulo}"
+                                           Margin="0,0,0,4" Text="Todavía no hay ningún archivo JSON."/>
+
+                                <TextBlock Text="HISTORIAL" Style="{StaticResource Seccion}" Margin="0,32,0,12"/>
+                                <ListBox x:Name="ListaHistorial" Style="{StaticResource ListaTarjetas}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource Tarjeta}" Padding="16" Margin="0,0,0,8">
+                                                <StackPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                                                    VerticalAlignment="Center" MinWidth="86">
+                                                            <Ellipse Style="{StaticResource Punto}" Fill="{Binding ColorTipo}"/>
+                                                            <TextBlock Style="{StaticResource TextoEtiqueta}"
+                                                                       Text="{Binding Tipo}" Foreground="{Binding ColorTipo}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Titulo}" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding Detalle}" FontSize="12" Margin="0,4,0,0"
+                                                                       Foreground="{DynamicResource TextoTenue}"/>
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Tamano}" FontSize="20"
+                                                                   FontWeight="SemiBold" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource Exito}"/>
+                                                    </Grid>
+                                                    <TextBlock Text="{Binding PieInforme}" FontSize="11" Margin="0,8,0,0"
+                                                               Foreground="{DynamicResource TextoTenue}"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                                <TextBlock x:Name="TxtHistorialVacio" Style="{StaticResource Subtitulo}"
+                                           Text="Todavía no hay nada en el historial." Visibility="Collapsed"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!-- ==================== AJUSTES ==================== -->
+                    <!-- Destino de foco, no parada de tabulación. -->
+                    <Grid x:Name="PanelAjustes" Visibility="Collapsed"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Ajustes">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="32,28,32,0">
+                            <TextBlock Text="Ajustes" Style="{StaticResource Titulo}"/>
+                            <TextBlock Style="{StaticResource Subtitulo}" Margin="0,4,0,0"
+                                       Text="Estos valores se aplican al análisis y se recuerdan entre sesiones. Al tocar cualquiera, el perfil pasa a Personalizado."/>
+                        </StackPanel>
+
+                        <ScrollViewer Grid.Row="1" Margin="32,24,24,0" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,0,8,24" MaxWidth="720" HorizontalAlignment="Left">
+
+                                <Border Style="{StaticResource Tarjeta}">
+                                    <StackPanel>
+                                        <TextBlock Text="Umbrales de detección" FontWeight="SemiBold" FontSize="15"/>
+
+                                        <!-- Dos columnas (ver la barra inferior de
+                                             Panel.Resultados.xaml): el deslizador mide 260 px fijos y
+                                             el rótulo crece con el texto; sin columnas se cruzan. -->
+                                        <Grid Margin="0,18,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                                <TextBlock Text="Tamaño mínimo para proponer un elemento"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock x:Name="TxtMinimoMB" Style="{StaticResource Subtitulo}" Text="10 MB"/>
+                                            </StackPanel>
+                                            <!--
+                                                Los deslizadores no tienen relación declarada con su
+                                                rótulo: necesitan nombre accesible propio para que un
+                                                lector de pantalla indique qué miden.
+                                            -->
+                                            <Slider x:Name="SliderMinimoMB" Grid.Column="1" Width="260" Minimum="1" Maximum="500"
+                                                    AutomationProperties.Name="Tamaño mínimo en megabytes"
+                                                    Value="10" TickFrequency="1" IsSnapToTickEnabled="True"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Border Style="{StaticResource Separador}"/>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                                <TextBlock Text="Días sin usar para considerar algo abandonado"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock x:Name="TxtDiasSinUso" Style="{StaticResource Subtitulo}" Text="180 días"/>
+                                            </StackPanel>
+                                            <Slider x:Name="SliderDias" Grid.Column="1" Width="260" Minimum="30" Maximum="730"
+                                                    AutomationProperties.Name="Días sin usar"
+                                                    Value="180" TickFrequency="10" IsSnapToTickEnabled="True"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Border Style="{StaticResource Separador}"/>
+
+                                        <CheckBox x:Name="ChkMenores" Content="Incluir también los elementos pequeños"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="28,4,0,0"
+                                                   Text="Añade cachés de menos de unos pocos MB. Encuentra más cosas, pero la lista se llena de ruido."/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!--
+                                    EXCLUSIONES DEL USUARIO. No se titula "Carpetas":
+                                    la lista también guarda claves sintéticas de
+                                    elementos que no son carpetas (comandos, papelera).
+
+                                    Los textos salen de Get-ExclusionVista y
+                                    Get-TextoListaExclusiones (src/Core/Exclusiones.ps1).
+                                    En este bloque no se usan DataTrigger, estilos con
+                                    disparadores ni convertidores (lo comprueba una
+                                    prueba): su comportamiento no se puede verificar
+                                    sin WPF.
+
+                                    El botón "Quitar" está dentro de la plantilla: el
+                                    Click se engancha en la lista. Lleva en el Tag la
+                                    clave exacta, no el título.
+
+                                    El resumen es visible también con la lista vacía e
+                                    indica cómo añadir exclusiones.
+                                -->
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Lo que no se toca nunca" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock x:Name="TxtResumenExclusiones" Style="{StaticResource Subtitulo}"
+                                                   Margin="0,8,0,0" TextWrapping="Wrap"
+                                                   Text="Todavía no has excluido nada."/>
+                                        <ItemsControl x:Name="ListaExclusiones" Margin="0,14,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <!--
+                                                        Fondo elevado y radio 6, como las filas: con el
+                                                        estilo Tarjeta tendría el mismo color que la
+                                                        tarjeta que la contiene.
+                                                    -->
+                                                    <Border Background="{DynamicResource FondoElevado}"
+                                                            BorderBrush="{DynamicResource Borde}" BorderThickness="1"
+                                                            CornerRadius="6" Padding="13" Margin="0,0,0,7">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Titulo}" FontWeight="SemiBold"
+                                                                           TextWrapping="Wrap"/>
+                                                                <TextBlock Text="{Binding Detalle}" FontSize="12" Margin="0,4,0,0"
+                                                                           TextWrapping="Wrap"
+                                                                           Foreground="{DynamicResource TextoTenue}"/>
+                                                            </StackPanel>
+                                                            <Button x:Name="BtnQuitarExclusion" Grid.Column="1"
+                                                                    Style="{StaticResource BotonSecundario}"
+                                                                    Margin="12,0,0,0" VerticalAlignment="Center"
+                                                                    Content="Quitar" Tag="{Binding Clave}"
+                                                                    AutomationProperties.Name="{Binding Titulo}"
+                                                                    ToolTip="Deja de excluirlo. No borra nada: vuelve a proponerse en los próximos análisis."/>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Cómo se elimina" FontWeight="SemiBold" FontSize="15"/>
+                                        <CheckBox x:Name="ChkPermanente" Margin="0,16,0,0"
+                                                  Content="Borrado permanente, sin pasar por la papelera"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="28,6,0,0"
+                                                   Text="Desactivado, todo lo que se pueda va a la papelera y se puede recuperar. Activado, el espacio se libera al instante pero no hay marcha atrás."/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Permisos" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock x:Name="TxtEstadoAdmin" Style="{StaticResource Subtitulo}" Margin="0,8,0,16"
+                                                   Text="Comprobando..."/>
+                                        <Button x:Name="BtnReiniciarAdmin" Style="{StaticResource BotonSecundario}"
+                                                Content="Reiniciar como administrador" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Datos del programa" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock x:Name="TxtCarpetaDatos" Style="{StaticResource Subtitulo}" Margin="0,8,0,16"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="BtnAbrirDatos" Style="{StaticResource BotonSecundario}"
+                                                    Content="Abrir carpeta de datos"/>
+                                            <Button x:Name="BtnRestablecer" Style="{StaticResource BotonTexto}"
+                                                    Content="Restablecer ajustes" Margin="10,0,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!-- ==================== ACERCA DE ==================== -->
+                    <!-- Destino de foco, no parada de tabulación. -->
+                    <Grid x:Name="PanelAcerca" Visibility="Collapsed"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Acerca de Cachivache">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="32,28,32,28" MaxWidth="760" HorizontalAlignment="Left">
+                                <TextBlock Text="Acerca de Cachivache" Style="{StaticResource Titulo}"/>
+                                <TextBlock x:Name="TxtVersionAcerca" Style="{StaticResource Subtitulo}" Margin="0,4,0,0"/>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,22,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Cómo funciona la seguridad" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,12,0,0" LineHeight="21"
+                                                   Text="El programa trabaja con lista blanca: una ruta solo se puede borrar si cuelga de una carpeta que el módulo ha autorizado explícitamente, y la propia carpeta autorizada nunca es borrable, solo lo que hay dentro. Además hay filtros que vetan, para cualquier módulo: las rutas del sistema y una lista negra explícita, la raíz de cualquier unidad, los recursos de red, las travesías con dos puntos, las carpetas personales (Escritorio, Documentos, Descargas, Imágenes, Música y Vídeos), las carpetas de copias de seguridad, y los enlaces simbólicos. A esos se añade el veto por extensión de trabajo personal (documentos, hojas, fotos, código), universal salvo para el módulo de duplicados, que lo levanta únicamente cuando ha comprobado por hash que existe otra copia idéntica del mismo archivo."/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,12,0,0" LineHeight="21"
+                                                   Text="La comprobación se repite justo antes de borrar, no solo durante el análisis: si algo ha cambiado entre medias, la eliminación se bloquea. Y siempre que es posible se vacía el contenido de una carpeta en lugar de borrar la carpeta, porque muchos programas fallan si su carpeta de caché desaparece."/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Lo que este programa NO hace" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,12,0,0" LineHeight="21"
+                                                   Text="No escribe en el registro de Windows. No desinstala programas. No toca WinSxS a mano. No borra Windows.old. No elimina perfiles de usuario ni puntos de restauración. Cuando algo de eso conviene, lo dice y explica cómo hacerlo desde Windows."/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Licencia y código" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,10,0,14"
+                                                   Text="Software libre bajo licencia MIT. Todo el código es PowerShell legible: puedes leer exactamente qué hace antes de ejecutarlo."/>
+                                        <Button x:Name="BtnRepositorio" Style="{StaticResource BotonSecundario}"
+                                                Content="Ver el código en GitHub" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!--
+                                    ==================== VERSIÓN NUEVA ====================
+
+                                    La consulta solo se lanza al pulsar el botón (nunca al arrancar
+                                    ni en segundo plano): una consulta automática revelaría la IP y
+                                    la hora a un tercero. El texto y los botones los decide
+                                    Get-AvisoActualizacion.
+                                -->
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Versión y actualizaciones" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock x:Name="TxtActualizacion" Style="{StaticResource Subtitulo}" Margin="0,10,0,14"
+                                                   Text="Cachivache no se conecta a internet por su cuenta. Si pulsas el botón, y solo entonces, se consulta en GitHub cuál es la última versión publicada. No se envía ningún dato tuyo."/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="BtnBuscarActualizacion" Style="{StaticResource BotonSecundario}"
+                                                    Content="Buscar si hay una versión nueva"/>
+                                            <Button x:Name="BtnIrAVersionNueva" Style="{StaticResource BotonPrimario}"
+                                                    Content="Ver la versión nueva" Margin="10,0,0,0" Visibility="Collapsed"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!--
+                                    ==================== DIAGNÓSTICO ====================
+
+                                    La misma función que .\Cachivache.ps1 -Diagnostico, accesible sin
+                                    consola (Cachivache.exe arranca sin ella).
+                                -->
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Informar de un problema" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,10,0,14"
+                                                   Text="El diagnóstico reúne la versión, el entorno, las unidades y las últimas líneas del registro en un solo bloque de texto, listo para pegar en una incidencia. No incluye las rutas de tus archivos ni el nombre del equipo."/>
+                                        <Button x:Name="BtnCopiarDiagnostico" Style="{StaticResource BotonSecundario}"
+                                                Content="Copiar diagnóstico" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,91 @@
+name: Informar de un fallo
+description: Algo no funciona como debería
+labels: ['fallo']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por avisar.
+
+        **Si el fallo es que el programa propone borrar algo que no debería, no lo publiques aquí.**
+        Repórtalo en privado desde la pestaña Security → Report a vulnerability, como explica `SECURITY.md`.
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Qué ha pasado
+      description: Qué esperabas que ocurriera y qué ocurrió en su lugar.
+    validations:
+      required: true
+
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Cómo reproducirlo
+      placeholder: |
+        1. Abro Cachivache.exe
+        2. Elijo el perfil...
+        3. Pulso Analizar
+        4. Ocurre esto
+    validations:
+      required: true
+
+  - type: dropdown
+    id: perfil
+    attributes:
+      label: Perfil usado
+      options: [Conservador, Equilibrado, Exhaustivo, Personalizado, No lo recuerdo]
+    validations:
+      required: true
+
+  - type: input
+    id: modulos
+    attributes:
+      label: Módulos implicados
+      description: Si sabes cuál, dilo. Se ven con `.\Cachivache.ps1 -Listar`.
+      placeholder: caches, restos
+
+  - type: input
+    id: windows
+    attributes:
+      label: Versión de Windows
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+
+  - type: input
+    id: powershell
+    attributes:
+      label: Versión de PowerShell
+      description: Se obtiene con `$PSVersionTable.PSVersion`
+      placeholder: 5.1.26100.2161
+    validations:
+      required: true
+
+  - type: dropdown
+    id: entorno
+    attributes:
+      label: ¿Alguna de estas circunstancias?
+      multiple: true
+      options:
+        - Windows en un idioma distinto del castellano
+        - Carpetas personales redirigidas a OneDrive
+        - El perfil de usuario está en una unidad distinta de C:
+        - Se ejecutaba como administrador
+        - Ninguna
+
+  - type: textarea
+    id: diagnostico
+    attributes:
+      label: Diagnóstico
+      description: >
+        La salida de `.\Cachivache.ps1 -Diagnostico` (o del botón *Copiar diagnóstico* en Acerca de).
+        Revísala antes de pegarla: incluye las últimas líneas del registro.
+      render: text
+
+  - type: textarea
+    id: registro
+    attributes:
+      label: Registro
+      description: Si hace falta más contexto, el fragmento pertinente de `%LOCALAPPDATA%\Cachivache\registros\`.
+      render: text

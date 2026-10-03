@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------------
+#  Finales de linea: LF en todo el repositorio
+#
+#  Git para Windows usa core.autocrlf=true por defecto y convertiria a
+#  CRLF. Una prueba compara el XAML montado byte a byte con un oraculo, y
+#  PowerShell 5.1 lee LF sin problema.
+# ---------------------------------------------------------------------
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------
+#  Binarios: sin conversiones
+# ---------------------------------------------------------------------
+*.png  binary
+*.ico  binary
+*.exe  binary
+*.zip  binary
+
+# ---------------------------------------------------------------------
+#  Oraculo del XAML montado: se compara byte a byte. Explicito aunque la
+#  regla general ya lo cubre, para que ninguna excepcion posterior lo
+#  alcance.
+# ---------------------------------------------------------------------
+tests/datos/MainWindow.montado.esperado.xaml text eol=lf
+
+# ---------------------------------------------------------------------
+#  Lenguaje en las estadisticas de GitHub (sin esto cuentan el .yml de
+#  la CI y los .json)
+# ---------------------------------------------------------------------
+*.ps1   linguist-language=PowerShell
+*.psd1  linguist-language=PowerShell
+docs/*  linguist-documentation

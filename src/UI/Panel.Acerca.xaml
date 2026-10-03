@@ -1,0 +1,85 @@
+﻿<!--
+    Panel "Acerca de" de la ventana principal.
+
+    Fragmento de MainWindow.xaml, no un documento completo: se inserta como
+    texto antes de interpretar (ver Expand-PanelesXaml en Xaml.ps1), así que
+    hereda los xmlns y comparte el ámbito de nombres de la ventana.
+-->
+                    <!-- ==================== ACERCA DE ==================== -->
+                    <!-- Destino de foco, no parada de tabulación. -->
+                    <Grid x:Name="PanelAcerca" Visibility="Collapsed"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Acerca de Cachivache">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="32,28,32,28" MaxWidth="760" HorizontalAlignment="Left">
+                                <TextBlock Text="Acerca de Cachivache" Style="{StaticResource Titulo}"/>
+                                <TextBlock x:Name="TxtVersionAcerca" Style="{StaticResource Subtitulo}" Margin="0,4,0,0"/>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,22,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Cómo funciona la seguridad" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,12,0,0" LineHeight="21"
+                                                   Text="El programa trabaja con lista blanca: una ruta solo se puede borrar si cuelga de una carpeta que el módulo ha autorizado explícitamente, y la propia carpeta autorizada nunca es borrable, solo lo que hay dentro. Además hay filtros que vetan, para cualquier módulo: las rutas del sistema y una lista negra explícita, la raíz de cualquier unidad, los recursos de red, las travesías con dos puntos, las carpetas personales (Escritorio, Documentos, Descargas, Imágenes, Música y Vídeos), las carpetas de copias de seguridad, y los enlaces simbólicos. A esos se añade el veto por extensión de trabajo personal (documentos, hojas, fotos, código), universal salvo para el módulo de duplicados, que lo levanta únicamente cuando ha comprobado por hash que existe otra copia idéntica del mismo archivo."/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,12,0,0" LineHeight="21"
+                                                   Text="La comprobación se repite justo antes de borrar, no solo durante el análisis: si algo ha cambiado entre medias, la eliminación se bloquea. Y siempre que es posible se vacía el contenido de una carpeta en lugar de borrar la carpeta, porque muchos programas fallan si su carpeta de caché desaparece."/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Lo que este programa NO hace" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,12,0,0" LineHeight="21"
+                                                   Text="No escribe en el registro de Windows. No desinstala programas. No toca WinSxS a mano. No borra Windows.old. No elimina perfiles de usuario ni puntos de restauración. Cuando algo de eso conviene, lo dice y explica cómo hacerlo desde Windows."/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Licencia y código" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,10,0,14"
+                                                   Text="Software libre bajo licencia MIT. Todo el código es PowerShell legible: puedes leer exactamente qué hace antes de ejecutarlo."/>
+                                        <Button x:Name="BtnRepositorio" Style="{StaticResource BotonSecundario}"
+                                                Content="Ver el código en GitHub" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!--
+                                    ==================== VERSIÓN NUEVA ====================
+
+                                    La consulta solo se lanza al pulsar el botón (nunca al arrancar
+                                    ni en segundo plano): una consulta automática revelaría la IP y
+                                    la hora a un tercero. El texto y los botones los decide
+                                    Get-AvisoActualizacion.
+                                -->
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Versión y actualizaciones" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock x:Name="TxtActualizacion" Style="{StaticResource Subtitulo}" Margin="0,10,0,14"
+                                                   Text="Cachivache no se conecta a internet por su cuenta. Si pulsas el botón, y solo entonces, se consulta en GitHub cuál es la última versión publicada. No se envía ningún dato tuyo."/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="BtnBuscarActualizacion" Style="{StaticResource BotonSecundario}"
+                                                    Content="Buscar si hay una versión nueva"/>
+                                            <Button x:Name="BtnIrAVersionNueva" Style="{StaticResource BotonPrimario}"
+                                                    Content="Ver la versión nueva" Margin="10,0,0,0" Visibility="Collapsed"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!--
+                                    ==================== DIAGNÓSTICO ====================
+
+                                    La misma función que .\Cachivache.ps1 -Diagnostico, accesible sin
+                                    consola (Cachivache.exe arranca sin ella).
+                                -->
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Informar de un problema" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,10,0,14"
+                                                   Text="El diagnóstico reúne la versión, el entorno, las unidades y las últimas líneas del registro en un solo bloque de texto, listo para pegar en una incidencia. No incluye las rutas de tus archivos ni el nombre del equipo."/>
+                                        <Button x:Name="BtnCopiarDiagnostico" Style="{StaticResource BotonSecundario}"
+                                                Content="Copiar diagnóstico" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>

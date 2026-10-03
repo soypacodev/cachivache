@@ -1,0 +1,50 @@
+﻿<!--
+    Tema oscuro. Solo define pinceles; Styles.xaml los consume con
+    DynamicResource, así que cambiar de tema es sustituir este diccionario
+    por Theme.Light.xaml.
+
+    Los dos temas deben declarar exactamente las mismas claves (lo
+    comprueba una prueba): una clave ausente deja controles sin pintar.
+
+    Acento (#2DD4BF, cian) y Éxito (#4ADE80, verde) tienen tonos separados
+    a propósito, para que el riesgo y el espacio recuperado no se confundan
+    con un botón.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Superficies, de más lejana a más cercana: ventana, barra/lateral,
+         tarjeta, elevado, hover. Saltos pequeños; separa el borde. -->
+    <SolidColorBrush x:Key="FondoVentana"   Color="#0E1014"/>
+    <SolidColorBrush x:Key="FondoBarra"     Color="#13161C"/>
+    <SolidColorBrush x:Key="FondoLateral"   Color="#13161C"/>
+    <SolidColorBrush x:Key="FondoTarjeta"   Color="#181C23"/>
+    <SolidColorBrush x:Key="FondoElevado"   Color="#1F242D"/>
+    <SolidColorBrush x:Key="FondoHover"     Color="#272E39"/>
+    <SolidColorBrush x:Key="Borde"          Color="#2A313D"/>
+    <SolidColorBrush x:Key="BordeSuave"     Color="#20262F"/>
+
+    <!-- Texto: principal, secundario y terciario, todos con contraste
+         superior a 4.5:1 sobre FondoTarjeta. -->
+    <SolidColorBrush x:Key="Texto"          Color="#E8ECF4"/>
+    <SolidColorBrush x:Key="TextoSuave"     Color="#AEB7C6"/>
+    <SolidColorBrush x:Key="TextoTenue"     Color="#8C95A6"/>
+
+    <!-- Acento -->
+    <SolidColorBrush x:Key="Acento"         Color="#2DD4BF"/>
+    <SolidColorBrush x:Key="AcentoFuerte"   Color="#5EEAD4"/>
+    <SolidColorBrush x:Key="AcentoTenue"    Color="#0F2E2C"/>
+    <!-- Texto sobre el acento: oscuro, porque aquí el acento es claro. Al
+         ser un recurso del tema, cada tema elige su acento. -->
+    <SolidColorBrush x:Key="TextoSobreAcento" Color="#05231F"/>
+
+    <!-- Semánticos. Deliberadamente lejos del acento en tono. -->
+    <SolidColorBrush x:Key="Exito"          Color="#4ADE80"/>
+    <SolidColorBrush x:Key="Aviso"          Color="#FBBF24"/>
+    <SolidColorBrush x:Key="Peligro"        Color="#FB7185"/>
+    <SolidColorBrush x:Key="PeligroTenue"   Color="#331A21"/>
+
+    <!-- Gráfico de disco -->
+    <SolidColorBrush x:Key="DiscoLibre"     Color="#272E39"/>
+
+</ResourceDictionary>

@@ -1,0 +1,42 @@
+﻿<!--
+    Panel "Registro" de la ventana principal.
+
+    Fragmento de MainWindow.xaml, no un documento completo: se inserta como
+    texto antes de interpretar (ver Expand-PanelesXaml en Xaml.ps1), así que
+    hereda los xmlns y comparte el ámbito de nombres de la ventana.
+-->
+                    <!-- ==================== REGISTRO ==================== -->
+                    <!-- Destino de foco, no parada de tabulación. -->
+                    <Grid x:Name="PanelRegistro" Visibility="Collapsed"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Registro de la sesión">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <!-- Dos columnas (ver la barra inferior de
+                             Panel.Resultados.xaml): el párrafo largo no debe
+                             invadir los botones. -->
+                        <Grid Grid.Row="0" Margin="32,28,32,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                <TextBlock Text="Registro de la sesión" Style="{StaticResource Titulo}"/>
+                                <TextBlock Style="{StaticResource Subtitulo}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                           Text="Cada línea que el programa escribe en su archivo de registro aparece aquí, palabra por palabra. En pantalla se conservan las 2.000 últimas; en el archivo están todas."/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                        HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                <Button x:Name="BtnCopiarRegistro" Style="{StaticResource BotonSecundario}" Content="Copiar"/>
+                                <Button x:Name="BtnAbrirRegistro"  Style="{StaticResource BotonSecundario}"
+                                        Content="Abrir carpeta" Margin="10,0,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                        <!-- Sin aviso de "vacío": el arranque ya escribe la cabecera
+                             de sesión, así que el panel nunca está en blanco. -->
+                        <TextBox x:Name="Consola" Grid.Row="1" Style="{StaticResource Consola}" Margin="32,20,32,28"
+                                 AutomationProperties.Name="Registro de la sesión"/>
+                    </Grid>
+

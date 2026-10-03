@@ -1,0 +1,130 @@
+﻿<!--
+    Confirmación final antes de eliminar. Obliga a escribir una palabra
+    exacta para evitar borrados por un clic distraído.
+-->
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Confirmar eliminación" SizeToContent="Height" Width="620"
+        WindowStartupLocation="CenterOwner" WindowStyle="None" ResizeMode="NoResize"
+        Background="{DynamicResource FondoVentana}" ShowInTaskbar="False"
+
+        MaxHeight="760">
+    <!--
+        MaxHeight: con SizeToContent="Height" el diálogo crece con su contenido
+        y los botones podrían quedar fuera de la pantalla. 760 es solo el valor
+        de reserva; Dialogs.ps1 lo ajusta a la pantalla real con
+        Get-AlturaMaximaDialogo.
+    -->
+
+    <Border BorderBrush="{DynamicResource Borde}" BorderThickness="1">
+        <StackPanel Margin="28">
+
+            <StackPanel Orientation="Horizontal">
+                <Border Width="38" Height="38" CornerRadius="10"
+                        Background="{DynamicResource PeligroTenue}">
+                    <Path Width="19" Height="19" Stretch="Uniform"
+                          Fill="{DynamicResource Peligro}"
+                          Data="M12,2 L22,20 L2,20 Z M11,8 L13,8 L13,14 L11,14 Z M11,16 L13,16 L13,18 L11,18 Z"/>
+                </Border>
+                <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Confirmar eliminación" FontSize="20" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtSubtitulo" FontSize="13" Margin="0,4,0,0"
+                               Foreground="{DynamicResource TextoTenue}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Border Margin="0,20,0,0" CornerRadius="10" Padding="16"
+                    Background="{DynamicResource FondoTarjeta}"
+                    BorderBrush="{DynamicResource Borde}" BorderThickness="1">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Elementos marcados" TextWrapping="Wrap" Foreground="{DynamicResource TextoTenue}" FontSize="12"/>
+                        <TextBlock x:Name="TxtElementos" Grid.Column="1" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                    </Grid>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Espacio que se recuperaría" TextWrapping="Wrap" Foreground="{DynamicResource TextoTenue}" FontSize="12"/>
+                        <TextBlock x:Name="TxtEspacio" Grid.Column="1" HorizontalAlignment="Right" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Exito}"/>
+                    </Grid>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Destino de lo borrado" TextWrapping="Wrap" Foreground="{DynamicResource TextoTenue}" FontSize="12"/>
+                        <TextBlock x:Name="TxtDestino" Grid.Column="1" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="MarcoRiesgo" Margin="0,14,0,0" CornerRadius="10" Padding="14"
+                    Background="{DynamicResource PeligroTenue}" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock x:Name="TxtRiesgo" FontWeight="SemiBold" FontSize="13"
+                               Foreground="{DynamicResource Peligro}" TextWrapping="Wrap"/>
+                    <!--
+                        La lista va en un ScrollViewer con altura máxima: crece hasta donde
+                        cabe y después se desplaza, sin empujar los botones fuera de la pantalla.
+                    -->
+                    <ScrollViewer Margin="0,8,0,0" MaxHeight="260"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl x:Name="ListaRiesgo">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <!--
+                                        TextWrapping y no TextTrimming: los comandos externos deben leerse
+                                        completos antes de confirmar (SECURITY.md).
+                                    -->
+                                    <TextBlock Text="{Binding}" FontSize="12" Margin="0,4,0,0"
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextoSuave}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+
+            <TextBlock x:Name="TxtInstruccion" Margin="0,20,0,8" TextWrapping="Wrap"
+                       Text="Para continuar, escribe ELIMINAR en mayúsculas:"/>
+            <!--
+                TxtInstruccion es un TextBlock que WPF no asocia al cuadro: hace falta
+                nombre accesible propio.
+            -->
+            <TextBox x:Name="CampoConfirmacion" FontSize="15" Padding="12,10"
+                     AutomationProperties.Name="Palabra de confirmación"/>
+
+            <TextBlock x:Name="TxtError" Margin="0,8,0,0" FontSize="12" Visibility="Collapsed"
+                       Foreground="{DynamicResource Peligro}"
+                       Text="La palabra no coincide."/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                <!--
+                    IsCancel: Escape cierra el diálogo con el foco en cualquier control.
+                    BtnSi no lleva IsDefault a propósito: Enter no debe lanzar el borrado
+                    desde cualquier foco.
+                -->
+                <Button x:Name="BtnNo" Style="{StaticResource BotonSecundario}" Content="Cancelar"
+                        IsCancel="True"/>
+                <!--
+                    El rótulo real lo asigna Dialogs.ps1 con Get-TextosDestinoBorrado, junto
+                    con el destino, para que no se contradigan. Este Content es un valor de
+                    reserva neutro: no debe afirmar que el borrado es definitivo (puede ir a
+                    la papelera) y no puede faltar, porque un botón sin texto es inaccesible.
+                    Lo comprueba tests/Papelera.Tests.ps1.
+                -->
+                <Button x:Name="BtnSi" Style="{StaticResource BotonPeligro}" Margin="10,0,0,0"
+                        Content="Eliminar lo marcado" IsEnabled="False"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

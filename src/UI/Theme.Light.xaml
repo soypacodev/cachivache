@@ -1,0 +1,39 @@
+﻿<!--
+    Tema claro. Mismas claves que Theme.Dark.xaml (ver allí la explicación
+    de la paleta).
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Superficies. Fondo gris y tarjetas blancas: las tarjetas se
+         distinguen sin necesidad de sombra. -->
+    <SolidColorBrush x:Key="FondoVentana"   Color="#F5F7FA"/>
+    <SolidColorBrush x:Key="FondoBarra"     Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="FondoLateral"   Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="FondoTarjeta"   Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="FondoElevado"   Color="#EFF2F7"/>
+    <SolidColorBrush x:Key="FondoHover"     Color="#E5EAF2"/>
+    <SolidColorBrush x:Key="Borde"          Color="#D9DFE9"/>
+    <SolidColorBrush x:Key="BordeSuave"     Color="#E8EDF4"/>
+
+    <!-- Texto -->
+    <SolidColorBrush x:Key="Texto"          Color="#111722"/>
+    <SolidColorBrush x:Key="TextoSuave"     Color="#485469"/>
+    <SolidColorBrush x:Key="TextoTenue"     Color="#69748A"/>
+
+    <!-- Acento -->
+    <SolidColorBrush x:Key="Acento"         Color="#0D9488"/>
+    <SolidColorBrush x:Key="AcentoFuerte"   Color="#0B7C72"/>
+    <SolidColorBrush x:Key="AcentoTenue"    Color="#DCF5F2"/>
+    <SolidColorBrush x:Key="TextoSobreAcento" Color="#FFFFFF"/>
+
+    <!-- Semánticos -->
+    <SolidColorBrush x:Key="Exito"          Color="#15803D"/>
+    <SolidColorBrush x:Key="Aviso"          Color="#B45309"/>
+    <SolidColorBrush x:Key="Peligro"        Color="#DC2626"/>
+    <SolidColorBrush x:Key="PeligroTenue"   Color="#FDE7E7"/>
+
+    <!-- Gráfico de disco -->
+    <SolidColorBrush x:Key="DiscoLibre"     Color="#E2E8F0"/>
+
+</ResourceDictionary>

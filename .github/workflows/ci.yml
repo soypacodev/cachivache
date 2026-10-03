@@ -1,0 +1,338 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ===================================================================
+  #  Pasada completa: suite, analizador y suelo de cobertura
+  # ===================================================================
+  # Llama a tools/Probar.ps1, el mismo comando que se ejecuta en local, en
+  # lugar de duplicar la invocacion. El trabajo "pruebas" ejecuta ademas la
+  # suite en PowerShell 5.1, la version con la que corre el programa.
+  pasada:
+    name: Pasada completa (Probar.ps1)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Pester y PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -MinimumVersion 5.0 -Scope CurrentUser -Force -SkipPublisherCheck
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+
+      - name: Probar
+        shell: pwsh
+        run: .\tools\Probar.ps1
+
+      - name: Guardar el informe de la pasada
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pasada-completa
+          path: pruebas
+          if-no-files-found: ignore
+
+  # ===================================================================
+  #  Pruebas en las dos versiones de PowerShell que hay en Windows
+  # ===================================================================
+  pruebas:
+    name: Pruebas (PowerShell ${{ matrix.powershell }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - powershell: '5.1'
+            shell: powershell
+          - powershell: '7'
+            shell: pwsh
+
+    # El shell va en defaults y no en cada paso: la clave "shell:" de un
+    # paso no admite el contexto "matrix" y una expresion ahi invalida el
+    # flujo entero. jobs.<id>.defaults.run.shell si lo admite.
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Pester
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -MinimumVersion 5.0 -Scope CurrentUser -Force -SkipPublisherCheck
+
+      - name: Ejecutar las pruebas
+        run: |
+          Import-Module Pester -MinimumVersion 5.0
+          $configuracion = New-PesterConfiguration
+          $configuracion.Run.Path      = './tests'
+          $configuracion.Run.PassThru  = $true
+          $configuracion.Output.Verbosity      = 'Detailed'
+          $configuracion.TestResult.Enabled    = $true
+          $configuracion.TestResult.OutputPath = 'testResults.xml'
+
+          $resultado = Invoke-Pester -Configuration $configuracion
+          if ($resultado.FailedCount -gt 0) {
+              Write-Host "::error::Han fallado $($resultado.FailedCount) pruebas."
+              exit 1
+          }
+
+      - name: Publicar los resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-pester-${{ matrix.powershell }}
+          path: testResults.xml
+          if-no-files-found: ignore
+
+  # ===================================================================
+  #  El programa carga, lista sus modulos y analiza sin modificar nada
+  # ===================================================================
+  arranque:
+    name: Comprobacion de arranque
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Listar los modulos
+        shell: powershell
+        run: .\Cachivache.ps1 -Listar
+
+      - name: Analisis real en modo consola, sin borrar nada
+        shell: powershell
+        run: |
+          .\Cachivache.ps1 -Consola -Perfil conservador -Informe informe-ci.html
+          if (-not (Test-Path informe-ci.html)) {
+              Write-Host '::error::No se ha generado el informe.'
+              exit 1
+          }
+          Write-Host 'El analisis ha terminado y ha generado su informe.'
+
+      - name: Comprobar que no ha tocado nada del arbol de trabajo
+        shell: pwsh
+        run: |
+          Remove-Item informe-ci.html -Force -ErrorAction SilentlyContinue
+          $sucio = git status --porcelain
+          if ($sucio) {
+              Write-Host '::error::El analisis ha modificado archivos del repositorio:'
+              Write-Host $sucio
+              exit 1
+          }
+          Write-Host 'El repositorio sigue limpio despues del analisis.'
+
+  # ===================================================================
+  #  Sondeo de la ventana con UI Automation
+  # ===================================================================
+  sondeo:
+    name: Sondeo de la ventana (UI Automation)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Comprueba si este runner (Windows sin sesion interactiva) puede
+      # mostrar y manejar la ventana WPF. Sin continue-on-error a proposito:
+      # si falla, se corrige o se retira, no se ignora.
+      - name: Se puede manejar la ventana desde un guion?
+        shell: powershell
+        timeout-minutes: 5
+        run: |
+          $salida = .\tools\Sondeo-Robot.ps1 -Segundos 90 6>&1 | Out-String
+          Write-Host $salida
+          $fallos = @([regex]::Matches($salida, 'FALLA'))
+          if ($fallos.Count -gt 0) {
+              Write-Host ('::error::El sondeo de la ventana ha fallado en {0} paso(s).' -f $fallos.Count)
+              exit 1
+          }
+          if ($salida -notmatch '3b\.') {
+              Write-Host '::error::Falta el paso 3b, que es el que comprueba que el clic surte efecto.'
+              exit 1
+          }
+          Write-Host 'La ventana se puede manejar desde un guion en este ejecutor.'
+
+      - name: No ha quedado ningun Cachivache abierto
+        shell: pwsh
+        if: always()
+        run: |
+          $vivos = @(Get-Process powershell -ErrorAction SilentlyContinue |
+                     Where-Object { $_.MainWindowTitle -eq 'Cachivache' })
+          if ($vivos.Count -gt 0) {
+              Write-Host ('::error::Han quedado {0} proceso(s) con la ventana abierta.' -f $vivos.Count)
+              $vivos | Stop-Process -Force
+              exit 1
+          }
+          Write-Host 'No queda ningun proceso colgado.'
+
+  # ===================================================================
+  #  Banco de pruebas con borrado real
+  # ===================================================================
+  # Un runner de windows-latest es una maquina virtual efimera con NTFS y
+  # papelera reales, asi que aqui se ejecuta el banco de
+  # docs/BANCO-PRUEBAS.md salvo lo que requiere intervencion manual:
+  #
+  #   - Interfaz WPF (desplazamiento, marcado en lote, dialogos, foco,
+  #     Narrador): no hay sesion de escritorio interactiva.
+  #   - OneDrive: requiere una cuenta y archivos a peticion.
+  #   - Archivos que no caben en la papelera: la cuota se lee de
+  #     Win32_Volume, que exige elevacion. Sin ella la cuota seria
+  #     "desconocida", Test-CabeEnPapelera responderia "cabe" (su contrato)
+  #     y la comprobacion se invertiria sin avisar.
+  #
+  # Solo se comprueba lo que monta el banco o respuestas de la guardia
+  # independientes del runner: un modulo vacio no falla; un cebo ausente, si.
+  banco:
+    name: Banco de pruebas (borrado real)
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    # Windows PowerShell 5.1, que es con lo que arranca Cachivache.exe y
+    # cuyo proveedor de archivos no admite rutas largas (en PowerShell 7
+    # funcionan sin mas).
+    defaults:
+      run:
+        shell: powershell
+
+    env:
+      # El mismo valor para montar y para comprobar.
+      CEBOS_DE_SOBRA: '300'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Montar el banco
+        run: |
+          .\tools\Banco-Pruebas.ps1 -ArchivosDeSobra ([int]$env:CEBOS_DE_SOBRA) -Confirm:$false
+
+      - name: Comprobar que el banco esta entero
+        run: |
+          .\tools\Banco-Comprobar.ps1 -Fase montaje -ArchivosDeSobra ([int]$env:CEBOS_DE_SOBRA)
+
+      - name: Analisis completo, sin borrar nada
+        run: |
+          .\Cachivache.ps1 -Consola -Perfil agresivo -Informe analisis.json
+
+      - name: Los cebos aparecen y no se propone nada del sistema
+        run: |
+          .\tools\Banco-Comprobar.ps1 -Fase analisis -Informe analisis.json `
+                                      -ArchivosDeSobra ([int]$env:CEBOS_DE_SOBRA)
+
+      - name: Medir y borrar una ruta larga de verdad, y los enlaces duros
+        run: |
+          .\tools\Banco-Comprobar.ps1 -Fase windows -ArchivosDeSobra ([int]$env:CEBOS_DE_SOBRA)
+
+      - name: Dos analisis seguidos en el mismo proceso
+        run: |
+          .\tools\Banco-Comprobar.ps1 -Fase dosanalisis
+
+      # A partir de aqui se borra de verdad. La simulacion va primero: si lo
+      # marcado incluye algo ajeno al banco, el trabajo se detiene con el
+      # disco intacto.
+      - name: Simular la limpieza y comprobar que solo tocaria los cebos
+        run: |
+          .\Cachivache.ps1 -Consola -Modulos temporales -Ejecutar -Simular -Informe simulacion.json
+          .\tools\Banco-Comprobar.ps1 -Fase simulacion -Informe simulacion.json `
+                                      -ArchivosDeSobra ([int]$env:CEBOS_DE_SOBRA)
+
+      - name: Inventariar las carpetas del usuario antes de borrar
+        run: |
+          .\tools\Banco-Comprobar.ps1 -Fase inventario -Salida antes.txt
+
+      # Solo el modulo de temporales y sin -Permanente: se borra lo que el
+      # analisis premarca (los cebos del banco) y va a la papelera.
+      - name: Limpieza real por consola
+        run: |
+          .\Cachivache.ps1 -Consola -Modulos temporales -Ejecutar
+
+      - name: Inventariar despues
+        run: |
+          .\tools\Banco-Comprobar.ps1 -Fase inventario -Salida despues.txt
+
+      - name: Comprobar que solo han desaparecido los cebos
+        run: |
+          .\tools\Banco-Comprobar.ps1 -Fase limpieza -Antes antes.txt -Despues despues.txt `
+                                      -ArchivosDeSobra ([int]$env:CEBOS_DE_SOBRA)
+
+      - name: Quitar el banco
+        if: always()
+        run: |
+          .\tools\Banco-Pruebas.ps1 -Quitar -Confirm:$false
+
+      # Se guarda lo que se propuso y lo que se borro para diagnosticar
+      # fallos. El registro vive en %LOCALAPPDATA% y se copia al arbol de
+      # trabajo: el contexto "env" de un flujo no incluye las variables del
+      # sistema, y "${{ env.LOCALAPPDATA }}" daria una ruta vacia.
+      - name: Recoger el rastro
+        if: always()
+        run: |
+          New-Item -ItemType Directory -Path rastro -Force | Out-Null
+          foreach ($suelto in @('analisis.json', 'simulacion.json', 'antes.txt', 'despues.txt')) {
+              if (Test-Path -LiteralPath $suelto) { Copy-Item -LiteralPath $suelto -Destination rastro }
+          }
+          $datos = Join-Path $env:LOCALAPPDATA 'Cachivache'
+          if (Test-Path -LiteralPath $datos) {
+              Copy-Item -LiteralPath $datos -Destination (Join-Path 'rastro' 'Cachivache') -Recurse -Force
+          }
+          Get-ChildItem -Path rastro -Recurse -File |
+              ForEach-Object { '  {0,10:N0}  {1}' -f $_.Length, $_.FullName }
+
+      - name: Guardar los informes y el registro
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: banco-de-pruebas
+          path: rastro
+          if-no-files-found: warn
+
+  # ===================================================================
+  #  El XAML es XML valido
+  # ===================================================================
+  interfaz:
+    name: Validacion del XAML
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Comprobar cada archivo XAML
+        shell: pwsh
+        run: |
+          # Los Panel.*.xaml son fragmentos que se insertan en MainWindow.xaml
+          # y no declaran el espacio de nombres 'x': se validan montados, en
+          # el paso siguiente.
+          # Dentro del catch, $_ es el error: el archivo va en su variable.
+          $fallos = 0
+          $archivos = Get-ChildItem -Path ./src/UI -Filter '*.xaml' |
+              Where-Object { $_.Name -notlike 'Panel.*.xaml' }
+          foreach ($archivo in $archivos) {
+              try {
+                  [xml](Get-Content -LiteralPath $archivo.FullName -Raw) | Out-Null
+                  Write-Host "  OK   $($archivo.Name)"
+              } catch {
+                  Write-Host "::error file=$($archivo.FullName)::XAML invalido: $($_.Exception.Message)"
+                  $fallos++
+              }
+          }
+          if ($fallos -gt 0) { exit 1 }
+
+      - name: Comprobar la ventana ya montada con sus paneles
+        shell: pwsh
+        run: |
+          . ./src/UI/Xaml.ps1
+          $montado = Expand-PanelesXaml -Carpeta ./src/UI `
+                         -Texto ([IO.File]::ReadAllText((Resolve-Path ./src/UI/MainWindow.xaml)))
+          try {
+              [xml]$montado | Out-Null
+              Write-Host "  OK   MainWindow.xaml + $(@(Get-ChildItem ./src/UI -Filter 'Panel.*.xaml').Count) paneles"
+          } catch {
+              Write-Host "::error::La ventana montada no es XML valido: $($_.Exception.Message)"
+              exit 1
+          }

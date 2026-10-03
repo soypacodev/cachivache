@@ -1,0 +1,101 @@
+﻿<!--
+    Panel "Informes" de la ventana principal.
+
+    Fragmento de MainWindow.xaml, no un documento completo: se inserta como
+    texto antes de interpretar (ver Expand-PanelesXaml en Xaml.ps1), así que
+    hereda los xmlns y comparte el ámbito de nombres de la ventana.
+-->
+                    <!-- ==================== INFORMES ==================== -->
+                    <!-- Destino de foco, no parada de tabulación. -->
+                    <Grid x:Name="PanelInformes" Visibility="Collapsed"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Informes e historial">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="32,28,32,0">
+                            <TextBlock Text="Informes e historial" Style="{StaticResource Titulo}"/>
+                            <TextBlock Style="{StaticResource Subtitulo}" Margin="0,4,0,0"
+                                       Text="Cada análisis y cada limpieza quedan registrados. Los informes son archivos independientes que puedes archivar o compartir."/>
+                        </StackPanel>
+
+                        <ScrollViewer Grid.Row="1" Margin="32,24,24,0" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,0,8,24">
+                                <Border Style="{StaticResource Tarjeta}">
+                                    <StackPanel>
+                                        <TextBlock Text="Exportar el análisis actual" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="0,6,0,14"
+                                                   Text="Genera un archivo con todo lo encontrado en el último análisis."/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="BtnExportarHtml" Style="{StaticResource BotonPrimario}"   Content="Informe HTML"/>
+                                            <Button x:Name="BtnExportarCsv"  Style="{StaticResource BotonSecundario}" Content="Hoja de cálculo (CSV)" Margin="10,0,0,0"/>
+                                            <Button x:Name="BtnExportarJson" Style="{StaticResource BotonSecundario}" Content="Datos (JSON)" Margin="10,0,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="INFORMES GUARDADOS" Style="{StaticResource Seccion}" Margin="0,28,0,8"/>
+                                <TextBlock Style="{StaticResource Subtitulo}" Margin="0,0,0,12"
+                                           Text="Todo lo que se ha exportado hasta ahora, del más reciente al más antiguo. Pulsa uno para abrirlo."/>
+
+                                <TextBlock Text="Informes HTML" FontWeight="SemiBold" FontSize="13" Margin="0,6,0,8"/>
+                                <ListBox x:Name="ListaInformesHtml" Style="{StaticResource ListaTarjetas}"
+                                         ItemTemplate="{StaticResource PlantillaInforme}"/>
+                                <TextBlock x:Name="TxtSinInformesHtml" Style="{StaticResource Subtitulo}"
+                                           Margin="0,0,0,4" Text="Todavía no hay ningún informe HTML."/>
+
+                                <TextBlock Text="Hojas de cálculo (CSV)" FontWeight="SemiBold" FontSize="13" Margin="0,20,0,8"/>
+                                <ListBox x:Name="ListaInformesCsv" Style="{StaticResource ListaTarjetas}"
+                                         ItemTemplate="{StaticResource PlantillaInforme}"/>
+                                <TextBlock x:Name="TxtSinInformesCsv" Style="{StaticResource Subtitulo}"
+                                           Margin="0,0,0,4" Text="Todavía no hay ninguna hoja de cálculo."/>
+
+                                <TextBlock Text="Datos (JSON)" FontWeight="SemiBold" FontSize="13" Margin="0,20,0,8"/>
+                                <ListBox x:Name="ListaInformesJson" Style="{StaticResource ListaTarjetas}"
+                                         ItemTemplate="{StaticResource PlantillaInforme}"/>
+                                <TextBlock x:Name="TxtSinInformesJson" Style="{StaticResource Subtitulo}"
+                                           Margin="0,0,0,4" Text="Todavía no hay ningún archivo JSON."/>
+
+                                <TextBlock Text="HISTORIAL" Style="{StaticResource Seccion}" Margin="0,32,0,12"/>
+                                <ListBox x:Name="ListaHistorial" Style="{StaticResource ListaTarjetas}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource Tarjeta}" Padding="16" Margin="0,0,0,8">
+                                                <StackPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                                                    VerticalAlignment="Center" MinWidth="86">
+                                                            <Ellipse Style="{StaticResource Punto}" Fill="{Binding ColorTipo}"/>
+                                                            <TextBlock Style="{StaticResource TextoEtiqueta}"
+                                                                       Text="{Binding Tipo}" Foreground="{Binding ColorTipo}"/>
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Titulo}" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding Detalle}" FontSize="12" Margin="0,4,0,0"
+                                                                       Foreground="{DynamicResource TextoTenue}"/>
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Tamano}" FontSize="20"
+                                                                   FontWeight="SemiBold" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource Exito}"/>
+                                                    </Grid>
+                                                    <TextBlock Text="{Binding PieInforme}" FontSize="11" Margin="0,8,0,0"
+                                                               Foreground="{DynamicResource TextoTenue}"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                                <TextBlock x:Name="TxtHistorialVacio" Style="{StaticResource Subtitulo}"
+                                           Text="Todavía no hay nada en el historial." Visibility="Collapsed"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+

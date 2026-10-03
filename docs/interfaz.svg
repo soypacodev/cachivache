@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 700" width="1240" height="700" font-family="Segoe UI, Inter, system-ui, sans-serif">
+  <title>Esquema de la ventana de resultados de Cachivache</title>
+  <desc>Diagrama de la interfaz: barra de titulo, panel lateral con discos, lista de resultados agrupada por categoria y pie con el resumen de la seleccion.</desc>
+
+  <defs>
+    <clipPath id="marco"><rect x="0" y="0" width="1240" height="700" rx="10"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#marco)">
+    <rect width="1240" height="700" fill="#0E1014"/>
+
+    <!-- ================= BARRA DE TITULO ================= -->
+    <rect width="1240" height="38" fill="#13161C"/>
+    <path d="M16 12 L31 12 L29.3 26 L17.7 26 Z M21 9 L26 9 L26 12 L21 12 Z" fill="#2DD4BF"/>
+    <text x="39" y="24" fill="#E8ECF4" font-size="12.5" font-weight="600">Cachivache</text>
+    <text x="107" y="24" fill="#8C95A6" font-size="11">v2.0.0</text>
+    <rect x="562" y="11" width="116" height="17" rx="8.5" fill="#31260D"/>
+    <text x="620" y="23.5" fill="#FBBF24" font-size="11" font-weight="600" text-anchor="middle">Modo estandar</text>
+    <g fill="#8C95A6">
+      <circle cx="1058" cy="19" r="6" fill="none" stroke="#8C95A6" stroke-width="1.3"/>
+      <path d="M1055 19 a6 6 0 0 0 6 -6 a4.6 4.6 0 0 1 -6 6 z" fill="#8C95A6"/>
+      <rect x="1099" y="18.5" width="10" height="1.3"/>
+      <rect x="1145" y="14" width="10" height="10" fill="none" stroke="#8C95A6" stroke-width="1.3"/>
+      <path d="M1191 14 L1201 24 M1201 14 L1191 24" stroke="#8C95A6" stroke-width="1.4"/>
+    </g>
+
+    <!-- ================= PANEL LATERAL ================= -->
+    <rect y="38" width="228" height="662" fill="#13161C"/>
+    <line x1="228" y1="38" x2="228" y2="700" stroke="#2A313D" stroke-width="1"/>
+
+    <text x="24" y="70" fill="#8C95A6" font-size="11" font-weight="600" letter-spacing="0.6">NAVEGACION</text>
+
+    <!-- Navegacion: Resultados activo -->
+    <g font-size="13.5">
+      <text x="28" y="102" fill="#AEB7C6">Inicio</text>
+
+      <rect x="10" y="110" width="208" height="40" rx="8" fill="#0F2E2C"/>
+      <rect x="10" y="121" width="3" height="18" rx="1.5" fill="#2DD4BF"/>
+      <text x="28" y="135" fill="#E8ECF4" font-weight="600">Resultados</text>
+
+      <text x="28" y="170" fill="#AEB7C6">Registro</text>
+      <text x="28" y="204" fill="#AEB7C6">Informes</text>
+      <text x="28" y="238" fill="#AEB7C6">Ajustes</text>
+      <text x="28" y="272" fill="#AEB7C6">Acerca de</text>
+    </g>
+
+    <text x="24" y="316" fill="#8C95A6" font-size="11" font-weight="600" letter-spacing="0.6">DISCOS</text>
+
+    <!-- Tarjeta disco C: -->
+    <rect x="18" y="328" width="192" height="86" rx="12" fill="#181C23" stroke="#2A313D"/>
+    <text x="31" y="350" fill="#E8ECF4" font-size="12.5" font-weight="600">C:  Sistema</text>
+    <text x="197" y="350" fill="#8C95A6" font-size="11.5" text-anchor="end">87%</text>
+    <rect x="31" y="360" width="160" height="6" rx="3" fill="#272E39"/>
+    <rect x="31" y="360" width="139" height="6" rx="3" fill="#FBBF24"/>
+    <text x="31" y="384" fill="#8C95A6" font-size="11">62,4 GB libres de 476,9 GB</text>
+
+    <!-- Tarjeta disco D: -->
+    <rect x="18" y="424" width="192" height="86" rx="12" fill="#181C23" stroke="#2A313D"/>
+    <text x="31" y="446" fill="#E8ECF4" font-size="12.5" font-weight="600">D:  Datos</text>
+    <text x="197" y="446" fill="#8C95A6" font-size="11.5" text-anchor="end">41%</text>
+    <rect x="31" y="456" width="160" height="6" rx="3" fill="#272E39"/>
+    <rect x="31" y="456" width="66" height="6" rx="3" fill="#2DD4BF"/>
+    <text x="31" y="480" fill="#8C95A6" font-size="11">1,08 TB libres de 1,81 TB</text>
+
+    <line x1="24" y1="640" x2="204" y2="640" stroke="#2A313D"/>
+    <text x="24" y="662" fill="#8C95A6" font-size="11.5">Recuperados 38,2 GB en</text>
+    <text x="24" y="678" fill="#8C95A6" font-size="11.5">7 limpiezas.</text>
+
+    <!-- ================= CABECERA DE CONTENIDO ================= -->
+    <text x="260" y="88" fill="#E8ECF4" font-size="24" font-weight="600">Resultados del analisis</text>
+    <text x="260" y="112" fill="#8C95A6" font-size="13">312 elementos encontrados &#183; 24,7 GB recuperables &#183; 9 solo informativos. Nada se ha borrado.</text>
+
+    <!-- Barra de herramientas -->
+    <rect x="260" y="132" width="270" height="34" rx="8" fill="#1F242D" stroke="#2A313D"/>
+    <text x="272" y="154" fill="#8C95A6" font-size="13">Filtrar por nombre o ruta...</text>
+    <rect x="540" y="132" width="150" height="34" rx="8" fill="#1F242D" stroke="#2A313D"/>
+    <text x="552" y="154" fill="#E8ECF4" font-size="13">Todos los riesgos</text>
+    <path d="M668 147 L672 151 L676 147" fill="none" stroke="#8C95A6" stroke-width="1.6"/>
+
+    <g font-size="13" fill="#AEB7C6">
+      <text x="826" y="154">Marcar todo</text>
+      <text x="922" y="154">Desmarcar todo</text>
+      <text x="1036" y="154">Solo lo seguro</text>
+      <line x1="1130" y1="139" x2="1130" y2="159" stroke="#2A313D"/>
+      <text x="1142" y="154">Abrir ubicacion</text>
+    </g>
+
+    <!-- Cabecera de columnas -->
+    <g fill="#8C95A6" font-size="11" font-weight="600" letter-spacing="0.5">
+      <text x="308" y="196">ELEMENTO</text>
+      <text x="760" y="196">TAMANO</text>
+      <text x="836" y="196">RIESGO</text>
+      <text x="948" y="196">QUE PASA SI SE BORRA</text>
+    </g>
+    <line x1="248" y1="206" x2="1220" y2="206" stroke="#2A313D"/>
+
+    <!-- ================= GRUPO 1 ================= -->
+    <rect x="248" y="218" width="972" height="34" rx="8" fill="#1F242D"/>
+    <text x="262" y="240" fill="#E8ECF4" font-size="12.5" font-weight="600">Cachees</text>
+    <text x="1206" y="240" fill="#8C95A6" font-size="11.5" text-anchor="end">14 elementos</text>
+
+    <!-- Fila 1 -->
+    <rect x="276" y="268" width="18" height="18" rx="5" fill="#2DD4BF"/>
+    <path d="M280.5 277 L283.5 280 L289 273.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="308" y="272" fill="#E8ECF4" font-size="13" font-weight="600">Cache de Gradle</text>
+    <text x="308" y="289" fill="#8C95A6" font-size="11.5">se vacia el contenido, la carpeta se queda</text>
+    <text x="820" y="280" fill="#E8ECF4" font-size="13" font-weight="600" text-anchor="end">6,42 GB</text>
+    <rect x="836" y="269" width="46" height="18" rx="9" fill="#122A1B"/>
+    <text x="859" y="281.5" fill="#4ADE80" font-size="11" font-weight="600" text-anchor="middle">Bajo</text>
+    <text x="948" y="280" fill="#AEB7C6" font-size="11.5">Se recrea. El siguiente build de Android o Java tardara mas.</text>
+    <line x1="248" y1="304" x2="1220" y2="304" stroke="#20262F"/>
+
+    <!-- Fila 2 -->
+    <rect x="276" y="320" width="18" height="18" rx="5" fill="#2DD4BF"/>
+    <path d="M280.5 329 L283.5 332 L289 325.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="308" y="324" fill="#E8ECF4" font-size="13" font-weight="600">Shaders NVIDIA (DXCache)</text>
+    <text x="308" y="341" fill="#8C95A6" font-size="11.5">se vacia el contenido, la carpeta se queda</text>
+    <text x="820" y="332" fill="#E8ECF4" font-size="13" font-weight="600" text-anchor="end">2,10 GB</text>
+    <rect x="836" y="321" width="46" height="18" rx="9" fill="#122A1B"/>
+    <text x="859" y="333.5" fill="#4ADE80" font-size="11" font-weight="600" text-anchor="middle">Bajo</text>
+    <text x="948" y="332" fill="#AEB7C6" font-size="11.5">Se regenera. El primer arranque de cada juego ira algo mas lento.</text>
+    <line x1="248" y1="356" x2="1220" y2="356" stroke="#20262F"/>
+
+    <!-- ================= GRUPO 2 ================= -->
+    <rect x="248" y="370" width="972" height="34" rx="8" fill="#1F242D"/>
+    <text x="262" y="392" fill="#E8ECF4" font-size="12.5" font-weight="600">Restos de programas</text>
+    <text x="1206" y="392" fill="#8C95A6" font-size="11.5" text-anchor="end">6 elementos</text>
+
+    <!-- Fila 3: riesgo alto con aviso, sin marcar -->
+    <rect x="276" y="420" width="18" height="18" rx="5" fill="#1F242D" stroke="#2A313D" stroke-width="1.5"/>
+    <text x="308" y="424" fill="#E8ECF4" font-size="13" font-weight="600">VoxelForge</text>
+    <text x="308" y="441" fill="#8C95A6" font-size="11.5">1.284 archivos &#183; sin tocar desde 2023-04-11 (hace mas de 2 anyos)</text>
+    <text x="820" y="432" fill="#E8ECF4" font-size="13" font-weight="600" text-anchor="end">3,84 GB</text>
+    <rect x="836" y="421" width="46" height="18" rx="9" fill="#331A21"/>
+    <text x="859" y="433.5" fill="#FB7185" font-size="11" font-weight="600" text-anchor="middle">Alto</text>
+    <text x="948" y="426" fill="#FB7185" font-size="11.5" font-weight="600">Atencion: saves: 12 elementos; 4 archivos que parecen personales</text>
+    <text x="948" y="442" fill="#AEB7C6" font-size="11.5">No coincide con ningun programa instalado, proceso ni servicio.</text>
+    <line x1="248" y1="456" x2="1220" y2="456" stroke="#20262F"/>
+
+    <!-- Fila 4 -->
+    <rect x="276" y="472" width="18" height="18" rx="5" fill="#1F242D" stroke="#2A313D" stroke-width="1.5"/>
+    <text x="308" y="476" fill="#E8ECF4" font-size="13" font-weight="600">NorthPeak Studio</text>
+    <text x="308" y="493" fill="#8C95A6" font-size="11.5">417 archivos &#183; sin tocar desde 2024-01-30 (hace mas de 1 anyo)</text>
+    <text x="820" y="484" fill="#E8ECF4" font-size="13" font-weight="600" text-anchor="end">912,4 MB</text>
+    <rect x="836" y="473" width="54" height="18" rx="9" fill="#31260D"/>
+    <text x="863" y="485.5" fill="#FBBF24" font-size="11" font-weight="600" text-anchor="middle">Medio</text>
+    <text x="948" y="484" fill="#AEB7C6" font-size="11.5">No coincide con ningun programa instalado, proceso ni servicio.</text>
+    <line x1="248" y1="508" x2="1220" y2="508" stroke="#20262F"/>
+
+    <!-- ================= GRUPO 3 ================= -->
+    <rect x="248" y="522" width="972" height="34" rx="8" fill="#1F242D"/>
+    <text x="262" y="544" fill="#E8ECF4" font-size="12.5" font-weight="600">Navegador: Chrome</text>
+    <text x="1206" y="544" fill="#8C95A6" font-size="11.5" text-anchor="end">8 elementos</text>
+
+    <rect x="276" y="572" width="18" height="18" rx="5" fill="#2DD4BF"/>
+    <path d="M280.5 581 L283.5 584 L289 577.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="308" y="576" fill="#E8ECF4" font-size="13" font-weight="600">Chrome - Default - Cache</text>
+    <text x="308" y="593" fill="#8C95A6" font-size="11.5">paginas web guardadas &#183; se vacia el contenido</text>
+    <text x="820" y="584" fill="#E8ECF4" font-size="13" font-weight="600" text-anchor="end">1,37 GB</text>
+    <rect x="836" y="573" width="46" height="18" rx="9" fill="#122A1B"/>
+    <text x="859" y="585.5" fill="#4ADE80" font-size="11" font-weight="600" text-anchor="middle">Bajo</text>
+    <text x="948" y="584" fill="#AEB7C6" font-size="11.5">No borra contrasenyas, marcadores, cookies ni historial.</text>
+
+    <!-- ================= PIE ================= -->
+    <rect x="228" y="614" width="1012" height="86" fill="#13161C"/>
+    <line x1="228" y1="614" x2="1240" y2="614" stroke="#2A313D"/>
+    <text x="260" y="648" fill="#E8ECF4" font-size="13.5" font-weight="600">193 elementos marcados &#183; se recuperarian 18,6 GB</text>
+    <text x="260" y="668" fill="#8C95A6" font-size="11.5">En C: pasarias de 62,4 GB libres a 81,0 GB libres.</text>
+
+    <rect x="874" y="638" width="150" height="40" rx="8" fill="#1F242D" stroke="#2A313D"/>
+    <text x="949" y="663" fill="#E8ECF4" font-size="13" font-weight="600" text-anchor="middle">Guardar informe</text>
+
+    <rect x="1034" y="638" width="176" height="40" rx="8" fill="#FB7185"/>
+    <text x="1122" y="663" fill="#FFFFFF" font-size="13" font-weight="600" text-anchor="middle">Eliminar lo marcado</text>
+
+    <rect x="0.5" y="0.5" width="1239" height="699" rx="10" fill="none" stroke="#2A313D"/>
+  </g>
+</svg>

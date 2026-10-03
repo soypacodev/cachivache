@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"
+     role="img" aria-label="Icono de Cachivache">
+  <title>Cachivache</title>
+  <!--
+    Una C abierta y un elemento que sale por la abertura: el programa no
+    encierra nada, deja salir lo que sobra.
+
+    Solo geometría y dos colores, sin degradados ni detalles pequeños,
+    para que el icono se lea a 16x16 en la barra de tareas. Los dos
+    turquesas son los acentos de los temas oscuro (#2DD4BF) y claro
+    (#0D9488).
+
+    Este SVG es la fuente del icono: assets/cachivache.ico se genera a
+    partir de esta geometría en los seis tamaños que espera Windows
+    (16, 32, 48, 64, 128 y 256).
+  -->
+  <defs>
+    <linearGradient id="baldosa" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2DD4BF"/>
+      <stop offset="1" stop-color="#0D9488"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="256" height="256" rx="58" fill="url(#baldosa)"/>
+
+  <g fill="none" stroke="#FFFFFF" stroke-width="31" stroke-linecap="round">
+    <!-- Arco de 272 grados: large-arc-flag=1 porque pasa de media vuelta,
+         y sweep-flag=1 para que recorra el lado izquierdo y la abertura
+         quede a la derecha. Con sweep=0 sale la C del revés. -->
+    <path d="M163.55,183.60 A80,80 0 1 1 163.55,72.40"/>
+  </g>
+
+  <rect x="192" y="107" width="42" height="42" rx="11" fill="#FFFFFF"/>
+</svg>

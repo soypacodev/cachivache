@@ -1,0 +1,178 @@
+﻿<!--
+    Panel "Ajustes" de la ventana principal.
+
+    Fragmento de MainWindow.xaml, no un documento completo: se inserta como
+    texto antes de interpretar (ver Expand-PanelesXaml en Xaml.ps1), así que
+    hereda los xmlns y comparte el ámbito de nombres de la ventana.
+-->
+                    <!-- ==================== AJUSTES ==================== -->
+                    <!-- Destino de foco, no parada de tabulación. -->
+                    <Grid x:Name="PanelAjustes" Visibility="Collapsed"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Ajustes">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="32,28,32,0">
+                            <TextBlock Text="Ajustes" Style="{StaticResource Titulo}"/>
+                            <TextBlock Style="{StaticResource Subtitulo}" Margin="0,4,0,0"
+                                       Text="Estos valores se aplican al análisis y se recuerdan entre sesiones. Al tocar cualquiera, el perfil pasa a Personalizado."/>
+                        </StackPanel>
+
+                        <ScrollViewer Grid.Row="1" Margin="32,24,24,0" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,0,8,24" MaxWidth="720" HorizontalAlignment="Left">
+
+                                <Border Style="{StaticResource Tarjeta}">
+                                    <StackPanel>
+                                        <TextBlock Text="Umbrales de detección" FontWeight="SemiBold" FontSize="15"/>
+
+                                        <!-- Dos columnas (ver la barra inferior de
+                                             Panel.Resultados.xaml): el deslizador mide 260 px fijos y
+                                             el rótulo crece con el texto; sin columnas se cruzan. -->
+                                        <Grid Margin="0,18,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                                <TextBlock Text="Tamaño mínimo para proponer un elemento"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock x:Name="TxtMinimoMB" Style="{StaticResource Subtitulo}" Text="10 MB"/>
+                                            </StackPanel>
+                                            <!--
+                                                Los deslizadores no tienen relación declarada con su
+                                                rótulo: necesitan nombre accesible propio para que un
+                                                lector de pantalla indique qué miden.
+                                            -->
+                                            <Slider x:Name="SliderMinimoMB" Grid.Column="1" Width="260" Minimum="1" Maximum="500"
+                                                    AutomationProperties.Name="Tamaño mínimo en megabytes"
+                                                    Value="10" TickFrequency="1" IsSnapToTickEnabled="True"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Border Style="{StaticResource Separador}"/>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                                <TextBlock Text="Días sin usar para considerar algo abandonado"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock x:Name="TxtDiasSinUso" Style="{StaticResource Subtitulo}" Text="180 días"/>
+                                            </StackPanel>
+                                            <Slider x:Name="SliderDias" Grid.Column="1" Width="260" Minimum="30" Maximum="730"
+                                                    AutomationProperties.Name="Días sin usar"
+                                                    Value="180" TickFrequency="10" IsSnapToTickEnabled="True"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Border Style="{StaticResource Separador}"/>
+
+                                        <CheckBox x:Name="ChkMenores" Content="Incluir también los elementos pequeños"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="28,4,0,0"
+                                                   Text="Añade cachés de menos de unos pocos MB. Encuentra más cosas, pero la lista se llena de ruido."/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!--
+                                    EXCLUSIONES DEL USUARIO. No se titula "Carpetas":
+                                    la lista también guarda claves sintéticas de
+                                    elementos que no son carpetas (comandos, papelera).
+
+                                    Los textos salen de Get-ExclusionVista y
+                                    Get-TextoListaExclusiones (src/Core/Exclusiones.ps1).
+                                    En este bloque no se usan DataTrigger, estilos con
+                                    disparadores ni convertidores (lo comprueba una
+                                    prueba): su comportamiento no se puede verificar
+                                    sin WPF.
+
+                                    El botón "Quitar" está dentro de la plantilla: el
+                                    Click se engancha en la lista. Lleva en el Tag la
+                                    clave exacta, no el título.
+
+                                    El resumen es visible también con la lista vacía e
+                                    indica cómo añadir exclusiones.
+                                -->
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Lo que no se toca nunca" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock x:Name="TxtResumenExclusiones" Style="{StaticResource Subtitulo}"
+                                                   Margin="0,8,0,0" TextWrapping="Wrap"
+                                                   Text="Todavía no has excluido nada."/>
+                                        <ItemsControl x:Name="ListaExclusiones" Margin="0,14,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <!--
+                                                        Fondo elevado y radio 6, como las filas: con el
+                                                        estilo Tarjeta tendría el mismo color que la
+                                                        tarjeta que la contiene.
+                                                    -->
+                                                    <Border Background="{DynamicResource FondoElevado}"
+                                                            BorderBrush="{DynamicResource Borde}" BorderThickness="1"
+                                                            CornerRadius="6" Padding="13" Margin="0,0,0,7">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Titulo}" FontWeight="SemiBold"
+                                                                           TextWrapping="Wrap"/>
+                                                                <TextBlock Text="{Binding Detalle}" FontSize="12" Margin="0,4,0,0"
+                                                                           TextWrapping="Wrap"
+                                                                           Foreground="{DynamicResource TextoTenue}"/>
+                                                            </StackPanel>
+                                                            <Button x:Name="BtnQuitarExclusion" Grid.Column="1"
+                                                                    Style="{StaticResource BotonSecundario}"
+                                                                    Margin="12,0,0,0" VerticalAlignment="Center"
+                                                                    Content="Quitar" Tag="{Binding Clave}"
+                                                                    AutomationProperties.Name="{Binding Titulo}"
+                                                                    ToolTip="Deja de excluirlo. No borra nada: vuelve a proponerse en los próximos análisis."/>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Cómo se elimina" FontWeight="SemiBold" FontSize="15"/>
+                                        <CheckBox x:Name="ChkPermanente" Margin="0,16,0,0"
+                                                  Content="Borrado permanente, sin pasar por la papelera"/>
+                                        <TextBlock Style="{StaticResource Subtitulo}" Margin="28,6,0,0"
+                                                   Text="Desactivado, todo lo que se pueda va a la papelera y se puede recuperar. Activado, el espacio se libera al instante pero no hay marcha atrás."/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Permisos" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock x:Name="TxtEstadoAdmin" Style="{StaticResource Subtitulo}" Margin="0,8,0,16"
+                                                   Text="Comprobando..."/>
+                                        <Button x:Name="BtnReiniciarAdmin" Style="{StaticResource BotonSecundario}"
+                                                Content="Reiniciar como administrador" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource Tarjeta}" Margin="0,16,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Datos del programa" FontWeight="SemiBold" FontSize="15"/>
+                                        <TextBlock x:Name="TxtCarpetaDatos" Style="{StaticResource Subtitulo}" Margin="0,8,0,16"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="BtnAbrirDatos" Style="{StaticResource BotonSecundario}"
+                                                    Content="Abrir carpeta de datos"/>
+                                            <Button x:Name="BtnRestablecer" Style="{StaticResource BotonTexto}"
+                                                    Content="Restablecer ajustes" Margin="10,0,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+

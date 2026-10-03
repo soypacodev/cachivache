@@ -1,0 +1,183 @@
+﻿<!--
+    Panel "Inicio" de la ventana principal.
+
+    Fragmento de MainWindow.xaml, no un documento completo: se inserta como
+    texto antes de interpretar (ver Expand-PanelesXaml en Xaml.ps1), así que
+    hereda los xmlns y comparte el ámbito de nombres de la ventana.
+-->
+                    <!-- ==================== INICIO ==================== -->
+                    <!--
+                        Focusable + IsTabStop="False": el panel es destino de
+                        foco pero no parada de tabulación. mostrarPanel le da el
+                        foco para que los lectores de pantalla anuncien su nombre
+                        (su título visible). Sin IsTabStop="False" habría una
+                        parada de tabulación más por panel.
+                    -->
+                    <Grid x:Name="PanelInicio"
+                          Focusable="True" KeyboardNavigation.IsTabStop="False"
+                          AutomationProperties.Name="Análisis del equipo">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="32,28,32,0">
+                            <TextBlock Text="Análisis del equipo" Style="{StaticResource Titulo}"/>
+                            <TextBlock Style="{StaticResource Subtitulo}" Margin="0,4,0,0"
+                                       Text="Elige un perfil y los módulos que quieres revisar. El análisis no borra nada: solo mira y te enseña lo que ha encontrado."/>
+                        </StackPanel>
+
+                        <ScrollViewer Grid.Row="1" Margin="32,24,24,0" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,0,6,20">
+
+                                <!-- Perfiles -->
+                                <TextBlock Text="PERFIL DE LIMPIEZA" Style="{StaticResource Seccion}"/>
+                                <ItemsControl x:Name="ListaPerfiles">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="4"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <!--
+                                                La plantilla no tiene ContentPresenter, así que
+                                                Content está vacío: el nombre accesible se enlaza
+                                                a la misma propiedad que pinta el título.
+                                            -->
+                                            <RadioButton GroupName="perfil" Cursor="Hand" Margin="0,0,12,0"
+                                                         AutomationProperties.Name="{Binding Nombre}"
+                                                         IsChecked="{Binding Activo, Mode=TwoWay}">
+                                                <RadioButton.Template>
+                                                    <ControlTemplate TargetType="RadioButton">
+                                                        <Border x:Name="marco" CornerRadius="11" Padding="16"
+                                                                Background="{DynamicResource FondoTarjeta}"
+                                                                BorderBrush="{DynamicResource Borde}" BorderThickness="1.5">
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding Nombre}" FontWeight="SemiBold" FontSize="15"/>
+                                                                <TextBlock Text="{Binding Resumen}" FontSize="12" Margin="0,4,0,0"
+                                                                           TextWrapping="Wrap" Height="46"
+                                                                           Foreground="{DynamicResource TextoTenue}"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="marco" Property="Background" Value="{DynamicResource FondoElevado}"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsChecked" Value="True">
+                                                                <Setter TargetName="marco" Property="BorderBrush" Value="{DynamicResource Acento}"/>
+                                                                <Setter TargetName="marco" Property="Background"  Value="{DynamicResource AcentoTenue}"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </RadioButton.Template>
+                                            </RadioButton>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Módulos -->
+                                <Grid Margin="0,30,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="MÓDULOS A ANALIZAR"
+                                               TextTrimming="CharacterEllipsis" Style="{StaticResource Seccion}"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                HorizontalAlignment="Right" Margin="0,-6,0,0">
+                                        <Button x:Name="BtnModulosTodos"  Style="{StaticResource BotonTexto}" Content="Marcar todos"/>
+                                        <Button x:Name="BtnModulosNinguno" Style="{StaticResource BotonTexto}" Content="Desmarcar todos"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <ItemsControl x:Name="ListaModulos">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="2"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,12,12" Padding="16">
+                                                <Border.Style>
+                                                    <Style TargetType="Border" BasedOn="{StaticResource Tarjeta}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Disponible}" Value="False">
+                                                                <Setter Property="Opacity" Value="0.45"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!--
+                                                        La casilla y el nombre están en celdas distintas:
+                                                        sin nombre accesible propio, todas las casillas
+                                                        serían idénticas para un lector de pantalla.
+                                                    -->
+                                                    <CheckBox Grid.Column="0" VerticalAlignment="Top" Margin="0,4,0,0"
+                                                              AutomationProperties.Name="{Binding Nombre}"
+                                                              IsChecked="{Binding Seleccionado, Mode=TwoWay}"
+                                                              IsEnabled="{Binding Disponible}"/>
+
+                                                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Nombre}" FontWeight="SemiBold" FontSize="13"
+                                                                       TextWrapping="Wrap" MaxWidth="280"/>
+                                                            <StackPanel Orientation="Horizontal" Margin="10,2,0,0"
+                                                                        VerticalAlignment="Top">
+                                                                <Ellipse Style="{StaticResource Punto}" Fill="{Binding ColorRiesgo}"/>
+                                                                <TextBlock Style="{StaticResource TextoEtiqueta}"
+                                                                           Text="{Binding Riesgo}" Foreground="{Binding ColorRiesgo}"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Descripcion}" FontSize="12" Margin="0,4,0,0"
+                                                                   TextWrapping="Wrap"
+                                                                   Foreground="{DynamicResource TextoTenue}"/>
+                                                        <TextBlock Text="{Binding Nota}" FontSize="12" Margin="0,4,0,0"
+                                                                   TextWrapping="Wrap" Visibility="{Binding VisibilidadNota}"
+                                                                   Foreground="{DynamicResource Aviso}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Pie de acción -->
+                        <Border Grid.Row="2" Background="{DynamicResource FondoBarra}"
+                                BorderBrush="{DynamicResource Borde}" BorderThickness="0,1,0,0" Padding="32,16">
+                            <!-- Dos columnas (ver la barra inferior de
+                                 Panel.Resultados.xaml): sin ellas, el texto y los
+                                 botones se superponen al estrechar. -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock x:Name="TxtEstadoInicio" FontSize="13"
+                                               TextTrimming="CharacterEllipsis" Text="Listo para analizar."/>
+                                    <ProgressBar x:Name="BarraInicio" Width="420" Margin="0,12,0,0"
+                                                 HorizontalAlignment="Left" Visibility="Collapsed"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                                            VerticalAlignment="Center">
+                                    <Button x:Name="BtnCancelar" Style="{StaticResource BotonSecundario}"
+                                            Content="Cancelar" Margin="0,0,10,0" Visibility="Collapsed"/>
+                                    <Button x:Name="BtnAnalizar" Style="{StaticResource BotonPrimario}"
+                                            Content="Analizar el equipo" Padding="24,12"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
