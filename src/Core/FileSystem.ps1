@@ -370,15 +370,17 @@ function Get-IdentidadArchivo {
         esta función el recorrido lo contaría dos veces (WinSxS está formado
         casi por completo por enlaces duros).
 
+          * En Windows se usa GetFileInformationByHandle: número de enlaces,
+            número de serie del volumen e índice del archivo. Funciona igual
+            en PowerShell 5.1 y 7.
+          * Si la API no responde, se recurre a LinkType y Target de Get-Item
+            (solo útil en PowerShell 5.1, donde Target lista los enlaces).
           * Fuera de Windows se usa UnixStat (HardlinkCount e Inode).
-          * En Windows se usa LinkType y la identidad es el conjunto ordenado
-            de la ruta propia y las de Target, que es igual desde cualquiera
-            de los enlaces.
 
-        Recibe una ruta y no un FileInfo porque esas propiedades las añade el
-        proveedor de PowerShell: los objetos de EnumerateFiles no las tienen.
-        Eso supone un Get-Item por archivo, por lo que el llamante debe
-        pedirlo expresamente y solo donde compensa.
+        Recibe una ruta y no un FileInfo porque los objetos de
+        EnumerateFiles no traen esta información. Cuesta una consulta al
+        sistema por archivo, por lo que el llamante debe pedirlo
+        expresamente y solo donde compensa.
 
         Ante la duda devuelve $null: el archivo se cuenta normalmente, en vez
         de arriesgarse a descontar bytes reales.
@@ -395,6 +397,16 @@ function Get-IdentidadArchivo {
         $Ruta = ConvertFrom-RutaLarga -Ruta $Ruta
     }
 
+    # --- Camino Windows: identidad del sistema de archivos ---------------
+    # $IsWindows no existe en PowerShell 5.1 (vale $null).
+    if ($IsWindows -or ($null -eq $IsWindows)) {
+        $nativa = Get-IdentidadArchivoNativa -Ruta $Ruta
+        if ($null -ne $nativa) {
+            if ($nativa -eq '') { return $null }
+            return $nativa
+        }
+    }
+
     try {
         $item = Get-Item -LiteralPath $Ruta -Force -ErrorAction Stop
 
@@ -405,7 +417,7 @@ function Get-IdentidadArchivo {
             return 'unix:{0}:{1}' -f $unix.Value.DeviceId, $unix.Value.Inode
         }
 
-        # --- Camino Windows -------------------------------------------
+        # --- Camino Windows de reserva (PowerShell 5.1) ----------------
         $tipo = $item.PSObject.Properties['LinkType']
         if ($null -eq $tipo -or $tipo.Value -ne 'HardLink') { return $null }
 
@@ -420,6 +432,71 @@ function Get-IdentidadArchivo {
         if ($rutas.Count -lt 2) { return $null }
 
         return 'win:' + (($rutas | Sort-Object -Unique) -join '|').ToLowerInvariant()
+    } catch {
+        return $null
+    }
+}
+
+function Get-IdentidadArchivoNativa {
+    <#
+    .SYNOPSIS
+        Identidad de un archivo según Windows (volumen e índice).
+    .DESCRIPTION
+        Devuelve 'vol:<serie>:<índice>' si el archivo tiene más de un enlace,
+        una cadena vacía si tiene solo uno y $null si no se ha podido
+        consultar (fuera de Windows, sin permiso o API no disponible).
+
+        Abre el archivo sin pedir acceso de lectura ni de escritura, que
+        basta para consultar sus atributos y funciona aunque otro proceso lo
+        tenga abierto. Con FILE_FLAG_OPEN_REPARSE_POINT nunca sigue un enlace.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param([Parameter(Mandatory)] [string] $Ruta)
+
+    try {
+        if (-not ('Cachivache.EnlacesDuros' -as [type])) {
+            Add-Type -Namespace 'Cachivache' -Name 'EnlacesDuros' -UsingNamespace 'System.Runtime.InteropServices', 'Microsoft.Win32.SafeHandles' -MemberDefinition @'
+[StructLayout(LayoutKind.Sequential)]
+public struct Informacion {
+    public uint Atributos;
+    public uint CreacionBajo;  public uint CreacionAlto;
+    public uint AccesoBajo;    public uint AccesoAlto;
+    public uint EscrituraBajo; public uint EscrituraAlto;
+    public uint SerieVolumen;
+    public uint TamanoAlto;    public uint TamanoBajo;
+    public uint Enlaces;
+    public uint IndiceAlto;    public uint IndiceBajo;
+}
+
+[DllImport("kernel32.dll", EntryPoint = "CreateFileW", CharSet = CharSet.Unicode, SetLastError = true)]
+public static extern SafeFileHandle CreateFile(string lpFileName, uint dwDesiredAccess, uint dwShareMode,
+    IntPtr lpSecurityAttributes, uint dwCreationDisposition, uint dwFlagsAndAttributes, IntPtr hTemplateFile);
+
+[DllImport("kernel32.dll", SetLastError = true)]
+[return: MarshalAs(UnmanagedType.Bool)]
+public static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out Informacion lpFileInformation);
+'@ -ErrorAction Stop
+        }
+
+        # Acceso 0 (solo atributos), compartido para lectura, escritura y
+        # borrado (7), OPEN_EXISTING (3), FILE_FLAG_BACKUP_SEMANTICS más
+        # FILE_FLAG_OPEN_REPARSE_POINT (0x02200000).
+        $manejador = [Cachivache.EnlacesDuros]::CreateFile(
+            (ConvertTo-RutaLarga -Ruta $Ruta), [uint32]0, [uint32]7, [IntPtr]::Zero,
+            [uint32]3, [uint32]0x02200000, [IntPtr]::Zero)
+        try {
+            if ($manejador.IsInvalid) { return $null }
+            $info = New-Object 'Cachivache.EnlacesDuros+Informacion'
+            if (-not [Cachivache.EnlacesDuros]::GetFileInformationByHandle($manejador, [ref] $info)) {
+                return $null
+            }
+            if ($info.Enlaces -le 1) { return '' }
+            $indice = ([uint64]$info.IndiceAlto -shl 32) -bor [uint64]$info.IndiceBajo
+            return 'vol:{0:x8}:{1:x16}' -f $info.SerieVolumen, $indice
+        } finally {
+            $manejador.Dispose()
+        }
     } catch {
         return $null
     }

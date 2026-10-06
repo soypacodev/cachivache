@@ -287,9 +287,9 @@ function Save-IndiceDisco {
 
     .NOTES
         Escritura atómica, como Add-EntradaHistorial: se escribe en un
-        temporal junto al destino y se reemplaza con Move-Item -Force (lo
-        más parecido a un reemplazo atómico en PowerShell 5.1 y 7). Así un
-        corte durante la escritura no deja un índice truncado.
+        temporal junto al destino y se reemplaza con Move-ArchivoReemplazando
+        (File.Replace, atómico en NTFS). Así un corte durante la escritura
+        no deja un índice truncado ni el destino sin archivo.
 
         El temporal lleva el PID para que dos procesos no compartan archivo
         intermedio. Si el reemplazo falla, el .tmp no se borra aquí (en
@@ -410,7 +410,7 @@ function Save-IndiceDisco {
         $salida.Dispose(); $salida = $null
         $flujo = $null
 
-        Move-Item -LiteralPath $temporal -Destination $Ruta -Force -ErrorAction Stop
+        Move-ArchivoReemplazando -Origen $temporal -Destino $Ruta -Confirm:$false
         return $true
     } catch {
         # Sin error visible: si no se guarda, la próxima vez se recorre el

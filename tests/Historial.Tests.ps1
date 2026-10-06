@@ -171,3 +171,31 @@ Describe 'la limpieza interrumpida al cerrar se anota como las demas' {
         $script:TextoLlamada | Should -Not -Match '\$estado\.Modulos\s'
     }
 }
+
+Describe 'la limpieza terminada anota los modulos que ha tocado' {
+    # Se comprueba en el AST: la ventana necesita WPF y la consola, un disco real.
+
+    BeforeAll {
+        $script:LlamadaLimpieza = {
+            param([string] $Relativa)
+            $ruta = Join-Path $script:Raiz $Relativa
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile($ruta, [ref]$null, [ref]$null)
+            @($ast.FindAll({ param($n)
+                $n -is [System.Management.Automation.Language.CommandAst] -and
+                $n.GetCommandName() -eq 'Add-EntradaHistorial' -and
+                $n.Extent.Text -match "-Tipo 'limpieza'\s" }, $true))
+        }
+    }
+
+    It 'la ventana pasa los modulos del lote' {
+        $llamadas = & $script:LlamadaLimpieza 'src/UI/Window.Eliminacion.ps1'
+        $llamadas.Count | Should -Be 1
+        $llamadas[0].Extent.Text | Should -Match '-Modulos @\(\$estado\.ModulosLote\)'
+    }
+
+    It 'la consola pasa los modulos de lo marcado' {
+        $llamadas = & $script:LlamadaLimpieza 'src/Cli/Cli.ps1'
+        $llamadas.Count | Should -Be 1
+        $llamadas[0].Extent.Text | Should -Match '-Modulos @\(\$marcados'
+    }
+}

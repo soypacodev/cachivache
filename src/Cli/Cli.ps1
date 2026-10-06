@@ -277,6 +277,7 @@ function Invoke-CachivacheCli {
     if (-not $Simular) {
         Add-EntradaHistorial -Tipo 'limpieza' -Elementos $hechos -Bytes $liberado `
                              -Perfil $Configuracion.Perfil -LibreAntes $libreAntes -LibreDespues $libreDespues `
+                             -Modulos @($marcados | ForEach-Object { $_.ModuloId } | Select-Object -Unique) `
                              -Informe $informeLimpieza `
                              -CarpetaDatos $Configuracion.CarpetaDatos -Confirm:$false
     }

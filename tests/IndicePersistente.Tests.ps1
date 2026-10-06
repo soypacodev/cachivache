@@ -529,7 +529,9 @@ Describe 'La escritura tiene que ser atomica' {
         # Como Add-EntradaHistorial: un corte a mitad no deja el archivo truncado.
         $script:Codigo | Should -Match ([regex]::Escape('$temporal = "$Ruta.$PID.tmp"'))
         $script:Codigo | Should -Match ([regex]::Escape('[IO.File]::Open($temporal'))
-        $script:Codigo | Should -Match 'Move-Item[^\n]*-Destination \$Ruta -Force'
+        $script:Codigo | Should -Match 'Move-ArchivoReemplazando -Origen \$temporal -Destino \$Ruta'
+        # Move-Item -Force borra el destino antes de mover en PowerShell 5.1.
+        $script:Codigo | Should -Not -Match 'Move-Item'
     }
 
     It 'el archivo de destino no se abre nunca para escribir directamente' {

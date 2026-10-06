@@ -152,6 +152,7 @@
 
         Add-EntradaHistorial -Tipo 'limpieza' -Elementos $hechos -Bytes $liberado `
                              -Perfil $estado.Configuracion.Perfil `
+                             -Modulos @($estado.ModulosLote) `
                              -LibreAntes $estado.LibreInicial -LibreDespues $libreAhora `
                              -Informe $rutaInforme `
                              -Incompleto:$detenida -Motivo $motivo `

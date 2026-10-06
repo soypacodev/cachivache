@@ -410,9 +410,6 @@ Describe 'los enlaces duros se cuentan una sola vez' {
             $script:EnlaceCreado = $false
             $script:HayEnlaces   = $false
         }
-
-        # PowerShell 6 o superior.
-        $script:EsPwsh7 = $PSVersionTable.PSVersion.Major -ge 6
     }
 
     AfterAll {
@@ -423,21 +420,28 @@ Describe 'los enlaces duros se cuentan una sola vez' {
         $script:EnlaceCreado | Should -BeTrue -Because 'sin enlace creado no hay nada que medir'
     }
 
-    It 'y el programa sabe verlos, salvo la degradacion conocida de PowerShell 7' {
-        <#
-            Limitación conocida: Get-IdentidadArchivo usa LinkType y Target de
-            Get-Item. En PowerShell 5.1 (con el que arranca Cachivache.exe)
-            funciona; en PowerShell 7, Target no se rellena para enlaces duros,
-            la función devuelve $null y los enlaces duros se cuentan dos veces
-            sin error. La prueba exige que la degradación se limite a
-            PowerShell 7. La solución pasa por usar el número de serie del
-            volumen y el índice del archivo.
-        #>
-        if ($script:HayEnlaces) { return }
+    It 'y el programa sabe verlos, en PowerShell 5.1 y en 7' {
+        # En Windows se usa el índice del archivo, que no depende de la
+        # versión de PowerShell; fuera de Windows, UnixStat.
+        $script:HayEnlaces | Should -BeTrue -Because 'el sistema admite enlaces duros y la identidad debe detectarlos'
+    }
 
-        $script:EsPwsh7 | Should -BeTrue -Because (
-            'en PowerShell 5.1 los enlaces duros sí se detectan. Que no se detecten ahí ' +
-            'significa que la detección de enlaces duros está rota en la versión con la que corre el programa')
+    It 'Get-IdentidadArchivoNativa: en Windows distingue un enlace de varios; fuera, no sabe' {
+        $sueltoNativo = Get-IdentidadArchivoNativa -Ruta $script:suelto
+        $enlaceNativo = Get-IdentidadArchivoNativa -Ruta $script:original
+        if ($IsWindows -or ($null -eq $IsWindows)) {
+            $sueltoNativo | Should -Be '' -Because 'un solo enlace se marca con cadena vacía, no con $null'
+            $enlaceNativo | Should -Match '^vol:[0-9a-f]{8}:[0-9a-f]{16}$'
+            Get-IdentidadArchivoNativa -Ruta $script:enlace | Should -Be $enlaceNativo
+        } else {
+            $sueltoNativo | Should -BeNullOrEmpty -Because 'fuera de Windows la API no existe y se responde "no se sabe"'
+            $enlaceNativo | Should -BeNullOrEmpty
+        }
+    }
+
+    It 'Get-IdentidadArchivoNativa devuelve $null si el archivo no existe' {
+        Get-IdentidadArchivoNativa -Ruta (Join-Path $script:carpetaEnlaces 'no-existe.bin') |
+            Should -BeNullOrEmpty
     }
 
     It 'un archivo con un solo enlace no tiene identidad compartida' {
