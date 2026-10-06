@@ -456,7 +456,10 @@ function Get-IdentidadArchivoNativa {
 
     try {
         if (-not ('Cachivache.EnlacesDuros' -as [type])) {
-            Add-Type -Namespace 'Cachivache' -Name 'EnlacesDuros' -UsingNamespace 'System.Runtime.InteropServices', 'Microsoft.Win32.SafeHandles' -MemberDefinition @'
+            # System.Runtime.InteropServices ya lo añade -MemberDefinition. En
+            # Windows PowerShell 5.1 repetirlo es un aviso del compilador, y
+            # ahí los avisos hacen fallar Add-Type.
+            Add-Type -Namespace 'Cachivache' -Name 'EnlacesDuros' -UsingNamespace 'Microsoft.Win32.SafeHandles' -MemberDefinition @'
 [StructLayout(LayoutKind.Sequential)]
 public struct Informacion {
     public uint Atributos;
