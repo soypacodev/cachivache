@@ -27,7 +27,10 @@
 </p>
 
 <p align="center">
-  <img src="docs/interfaz.svg" alt="Esquema de la interfaz de Cachivache" width="820">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/resultados-oscuro.png">
+    <img src="docs/capturas/resultados-claro.png" alt="Resultados de un análisis: cada elemento con su tamaño, su riesgo y qué pasa si se borra" width="820">
+  </picture>
 </p>
 
 ---
@@ -111,6 +114,13 @@ Antes de confiar en un limpiador, mira lo que haría.
 
 La simulación pasa por **las mismas comprobaciones que un borrado real**, te dice cuánto espacio liberaría y lo anota en el registro, **sin tocar un solo archivo**. Si algo de lo que propone te sorprende, [abre una incidencia](https://github.com/soypacodev/cachivache/issues): un falso positivo es la información más valiosa para este proyecto.
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/simulacion-oscuro.png">
+    <img src="docs/capturas/simulacion-claro.png" alt="Aviso tras una simulación: no se ha borrado nada y se indica cuánto se habría liberado" width="820">
+  </picture>
+</p>
+
 ---
 
 ## Cómo se usa
@@ -119,6 +129,13 @@ La simulación pasa por **las mismas comprobaciones que un borrado real**, te di
 2. **Pulsa Analizar.** El análisis es de solo lectura, corre en segundo plano y se puede cancelar en cualquier momento.
 3. **Revisa los resultados.** Agrupados por categoría, con etiqueta de riesgo y explicación. Lo que lleva aviso sale sin marcar.
 4. **Elimina.** Todo va a la papelera salvo que actives el borrado permanente. Si hay algo de riesgo medio o alto marcado, hay que escribir `ELIMINAR` para confirmar.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/inicio-oscuro.png">
+    <img src="docs/capturas/inicio-claro.png" alt="Pantalla de inicio: perfiles de limpieza, módulos con su nivel de riesgo y estado de los discos" width="820">
+  </picture>
+</p>
 
 | Tecla | Acción |
 |---|---|
