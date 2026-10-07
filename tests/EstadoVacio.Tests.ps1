@@ -428,3 +428,18 @@ Describe 'los textos que ve el usuario estan bien escritos' {
             Should -Not -Match '1 elementos'
     }
 }
+
+Describe 'la barra de seleccion cuando lo marcado no ocupa nada' {
+    # Carpetas vacías y accesos rotos vienen marcados y suman 0 B: decir
+    # "se recuperarían 0 B" parece un fallo del programa.
+
+    It 'con 0 bytes dice que no ocupan espacio, no "se recuperarían 0 B"' {
+        $script:Ayudantes | Should -Match ([regex]::Escape("'{0} - no ocupan espacio'"))
+        $script:Ayudantes | Should -Match 'if \(\$bytes -gt 0\)'
+    }
+
+    It 'y la proyeccion no promete pasar de X libres a X libres' {
+        $script:Ayudantes | Should -Match 'no libera espacio en'
+    }
+}
+

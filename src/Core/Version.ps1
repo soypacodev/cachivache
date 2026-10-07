@@ -16,7 +16,7 @@
     panel Acerca de. Ver la nota del README.
 #>
 
-$script:VersionCachivache = '2.0.0'
+$script:VersionCachivache = '2.0.1'
 $script:RepositorioUrl   = 'https://github.com/soypacodev/cachivache'
 
 function Get-VersionCachivache {

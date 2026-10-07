@@ -68,7 +68,7 @@ Cachivache funciona al revés. **Cada elemento que propone dice qué es, cuánto
 Cada versión publica el **SHA-256** de sus archivos en la propia página de la versión y en `SHA256SUMS.txt`. Para comprobar que tu descarga es la publicada:
 
 ```powershell
-Get-FileHash .\Cachivache-v2.0.0.zip -Algorithm SHA256
+Get-FileHash .\Cachivache-v2.0.1.zip -Algorithm SHA256
 ```
 
 ### Opción B — Con Scoop

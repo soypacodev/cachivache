@@ -59,7 +59,7 @@
                         </Viewbox>
                         <TextBlock Text="Cachivache" FontWeight="SemiBold" FontSize="13"
                                    Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="TxtVersionBarra" Text="v2.0.0" FontSize="11"
+                        <TextBlock x:Name="TxtVersionBarra" Text="v2.0.1" FontSize="11"
                                    Foreground="{DynamicResource TextoTenue}"
                                    Margin="8,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>

@@ -4,13 +4,18 @@ Todos los cambios relevantes de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el proyecto sigue [versionado semántico](https://semver.org/lang/es/).
 
-## [Sin publicar]
+## [2.0.1] — 2026-10-07
 
 ### Corregido
 
 - El índice guardado del análisis de espacio se reemplaza de forma atómica también en PowerShell 5.1: un corte a mitad ya no puede dejarlo sin archivo.
 - Las limpiezas terminadas anotan en el historial qué módulos han tocado, igual que las interrumpidas.
 - Los enlaces duros se detectan también en PowerShell 7, con el índice de archivo de Windows en lugar de `Target`.
+
+### Cambiado
+
+- Cuando lo marcado no ocupa nada (carpetas vacías, accesos rotos), la barra de selección lo dice así en vez de «se recuperarían 0 B».
+- La comparación con el análisis anterior explica con más claridad por qué no sirve para comparar.
 
 ## [2.0.0] — 2026-10-03
 
@@ -69,5 +74,5 @@ Reescritura completa y primera versión publicada. La 1.0 era un script con inte
 
 - Primera versión: `Cachivache.ps1` con interfaz WinForms y ocho pasos de limpieza, más scripts sueltos de auditoría y limpieza por fases.
 
-[Sin publicar]: https://github.com/soypacodev/cachivache/compare/v2.0.0...HEAD
+[2.0.1]: https://github.com/soypacodev/cachivache/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/soypacodev/cachivache/releases/tag/v2.0.0

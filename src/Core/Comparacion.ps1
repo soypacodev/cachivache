@@ -78,7 +78,7 @@ function Get-FraseMotivoComparacion {
         'incompleto'    { return 'quedó incompleto' }
         'otro-perfil'   { return 'usó otro perfil' }
         'otros-modulos' { return 'miró otros módulos' }
-        'no-consta'     { return 'no dejó anotado del todo con qué se hizo' }
+        'no-consta'     { return 'no guardó con qué perfil y módulos se hizo' }
         default         { return '' }
     }
 }
@@ -228,7 +228,7 @@ function Get-ComparacionAnalisis {
     if ($motivos.Count -gt 0) {
         $frases = @($motivos | ForEach-Object { Get-FraseMotivoComparacion -Motivo $_ } |
                     Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-        $cola = ', pero aquel análisis {0}: no son cifras equiparables' -f ($frases -join ' y ')
+        $cola = ', pero no sirve para comparar: aquel análisis {0}' -f ($frases -join ' y ')
     }
 
     # Los paréntesis alrededor de la plantilla son necesarios: -f tiene más

@@ -575,12 +575,22 @@
 
         $libre = $estado.LibreCache
         $cuantos = if ($cuentaMarcados -eq 1) { '1 elemento marcado' } else { '{0} elementos marcados' -f $cuentaMarcados }
-        $c.TxtSeleccion.Text = '{0} - se recuperarían {1}' -f $cuantos, (Format-Tamano $bytes)
+        # Carpetas vacías y accesos rotos se marcan solos y no ocupan nada:
+        # "se recuperarían 0 B" parecería un fallo.
+        $c.TxtSeleccion.Text = if ($bytes -gt 0) {
+            '{0} - se recuperarían {1}' -f $cuantos, (Format-Tamano $bytes)
+        } else {
+            '{0} - no ocupan espacio' -f $cuantos
+        }
         if ($ocultos -gt 0) {
             $c.TxtSeleccion.Text += ' ({0} que el filtro no está mostrando)' -f $ocultos
         }
-        $c.TxtProyeccion.Text = 'En {0} pasarías de {1} libres a {2} libres.' -f `
-                                $estado.Configuracion.Unidad, (Format-Tamano $libre), (Format-Tamano ($libre + $bytes))
+        $c.TxtProyeccion.Text = if ($bytes -gt 0) {
+            'En {0} pasarías de {1} libres a {2} libres.' -f `
+                $estado.Configuracion.Unidad, (Format-Tamano $libre), (Format-Tamano ($libre + $bytes))
+        } else {
+            'Borrarlos ordena el equipo, pero no libera espacio en {0}.' -f $estado.Configuracion.Unidad
+        }
         $c.BtnEliminar.IsEnabled = -not $estado.Ocupado
     }
 

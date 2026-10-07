@@ -175,7 +175,7 @@ Describe 'no se compara lo que no es comparable' {
                                      -Perfil 'equilibrado' -Modulos @('caches', 'temporales')
         $r.HayReferencia | Should -BeTrue
         $r.Texto         | Should -BeLike '*890 elementos*'
-        $r.Texto         | Should -BeLike '*no son cifras equiparables*'
+        $r.Texto         | Should -BeLike '*no sirve para comparar*'
     }
 
     It 'un incompleto no acusa ademas de haber mirado otros modulos' {
